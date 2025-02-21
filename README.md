@@ -2,7 +2,8 @@
 
 Currently a very raw alpha, check TODO and WARNING comments for more.
 
-Stuff implemented at this moment:
- - tokenization;
- - parsing into separate structures;
- - printing a very ugly version of the initial code.
+## Roadmap:
+ - [x] Tokenization;
+ - [x] Parsing into separate structures and classes;
+ - [ ] Beautify output;
+ - [ ] Prod-ready to some degree.
