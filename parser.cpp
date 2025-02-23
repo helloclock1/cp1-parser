@@ -10,10 +10,9 @@ const std::unordered_map<Operator, std::string> kOperatorRepr = {{Operator::ADD,
 
 void Imports::AddImport(const std::string& module_name, const std::string& alias = "",
                         std::set<std::string> functions = {}) {
-    if (modules_map_.count(module_name) ==
-        0) {  // No module named `module_name` has been imported yet
+    if (modules_map_.count(module_name) == 0) {
         modules_map_[module_name] = {alias, functions};
-    } else {  // Just append functions to an already imported module
+    } else {
         modules_map_[module_name].second.insert(functions.begin(), functions.end());
     }
 }
@@ -62,12 +61,6 @@ std::string Parser::CurrentTokenLexeme() const {
     return CurrentToken().GetLexeme();
 }
 
-void Parser::Expect(const Token& token) {
-    if (CurrentToken() != token) {
-        throw std::runtime_error("Unexpected token encountered.");
-    }
-}
-
 void Parser::ExpectType(TokenType type) {
     if (CurrentToken().GetType() != type) {
         throw std::runtime_error("Unexpected token encountered.");
@@ -75,13 +68,12 @@ void Parser::ExpectType(TokenType type) {
 }
 
 void Parser::ParseImport(Module& module) {
-    ExpectType(TokenType::IMPORT);
-    tokenizer_.ReadToken();
+    tokenizer_.ReadToken(TokenType::IDENTIFIER);
     Imports imports;
     std::string module_name = ParseName();
     std::string alias = module_name;
     if (CurrentToken().GetType() == TokenType::AS) {
-        tokenizer_.ReadToken();
+        tokenizer_.ReadToken(TokenType::IDENTIFIER);
         alias = ParseName();
     }
     std::set<std::string> functions;
@@ -95,10 +87,7 @@ void Parser::ParseImport(Module& module) {
 }
 
 Declaration Parser::ParseLet() {
-    ExpectType(TokenType::LET);
-    tokenizer_.ReadToken();
-
-    ExpectType(TokenType::IDENTIFIER);
+    tokenizer_.ReadToken(TokenType::IDENTIFIER);
     std::string name = CurrentTokenLexeme();
     tokenizer_.ReadToken();
 
@@ -129,12 +118,9 @@ Declaration Parser::ParseLet() {
 }
 
 Module Parser::ParseSubmodule() {
-    ExpectType(TokenType::MODULE);
-    tokenizer_.ReadToken();
-    ExpectType(TokenType::IDENTIFIER);
+    tokenizer_.ReadToken(TokenType::IDENTIFIER);
     std::string submodule_name = CurrentTokenLexeme();
-    tokenizer_.ReadToken();
-    ExpectType(TokenType::WHERE);
+    tokenizer_.ReadToken(TokenType::WHERE);
     tokenizer_.ReadToken();
     if (CurrentTokenType() == TokenType::EOL) {
         tokenizer_.ReadToken();
@@ -153,14 +139,11 @@ Module Parser::ParseSubmodule() {
 }
 
 const std::string Parser::ParseName() {
-    ExpectType(TokenType::IDENTIFIER);
-
     std::string name = CurrentTokenLexeme();
     tokenizer_.ReadToken();
     while (CurrentToken().GetType() == TokenType::DOT) {
         name.append(CurrentTokenLexeme());
-        tokenizer_.ReadToken();
-        ExpectType(TokenType::IDENTIFIER);
+        tokenizer_.ReadToken(TokenType::IDENTIFIER);
         name.append(CurrentTokenLexeme());
         tokenizer_.ReadToken();
     }
@@ -168,14 +151,12 @@ const std::string Parser::ParseName() {
 }
 
 std::set<std::string> Parser::ParseImportFunctions() {
-    tokenizer_.ReadToken();
-    ExpectType(TokenType::IDENTIFIER);
+    tokenizer_.ReadToken(TokenType::IDENTIFIER);
     std::set<std::string> functions = {CurrentTokenLexeme()};
     tokenizer_.ReadToken();
 
     while (CurrentToken().GetType() == TokenType::COMMA) {
-        tokenizer_.ReadToken();
-        ExpectType(TokenType::IDENTIFIER);
+        tokenizer_.ReadToken(TokenType::IDENTIFIER);
         functions.insert(CurrentTokenLexeme());
         tokenizer_.ReadToken();
     }
@@ -227,7 +208,6 @@ Expression Parser::ParseAtom() {
 
         if (CurrentTokenType() == TokenType::L_BRACKET) {
             tokenizer_.ReadToken();
-            // Function call
             std::vector<Expression> args;
             while (CurrentTokenType() != TokenType::R_BRACKET) {
                 args.push_back(ParseExpression());

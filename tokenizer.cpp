@@ -2,7 +2,24 @@
 // lol)
 #include "tokenizer.h"
 
-void Tokenizer::ReadToken() {
+Token::Token() : type_(TokenType::EOL), lexeme_("\n") {
+}
+
+Token::Token(TokenType type, std::string lexeme) : type_(type), lexeme_(lexeme) {
+}
+
+TokenType Token::GetType() const {
+    return type_;
+}
+
+const std::string &Token::GetLexeme() const {
+    return lexeme_;
+}
+
+Tokenizer::Tokenizer(std::istream *ptr) : in_(ptr) {
+}
+
+void Tokenizer::ReadToken(TokenType expected) {
     if (in_->peek() == -1) {
         std::cout << "Tokenizing done, exiting...\n";
         current_token_ = Token(TokenType::FILE_END, "");
@@ -80,8 +97,10 @@ void Tokenizer::ReadToken() {
         current_token_ = Token(TokenType::POW, "^");
     } else if (in_->peek() == -1) {
     } else {
-        std::cout << "wtf is {" << in_->peek() << "}\n";
         throw std::runtime_error("Unknown symbol encountered.");
+    }
+    if (expected != TokenType::NONE && current_token_.GetType() != expected) {
+        throw std::runtime_error("Unknown token encountered.");
     }
 }
 

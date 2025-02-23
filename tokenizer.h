@@ -34,24 +34,20 @@ enum class TokenType {
     // Entities
     IDENTIFIER,
     // LITERAL
-    NUMBER
+    NUMBER,
+
+    NONE
 };
 
 // TODO(helloclock): perhaps do something when information about token lexeme is redundanat
 class Token {
 public:
-    Token() : type_(TokenType::EOL), lexeme_("\n") {
-    }
-    Token(TokenType type, std::string lexeme) : type_(type), lexeme_(lexeme) {
-    }
+    Token();
+    Token(TokenType type, std::string lexeme);
 
-    TokenType GetType() const {
-        return type_;
-    }
+    TokenType GetType() const;
 
-    const std::string &GetLexeme() const {
-        return lexeme_;
-    }
+    const std::string &GetLexeme() const;
 
     bool operator==(const Token &other) const;
     bool operator!=(const Token &other) const;
@@ -63,9 +59,8 @@ private:
 
 class Tokenizer {
 public:
-    Tokenizer(std::istream *ptr) : in_(ptr) {
-    }
-    void ReadToken();
+    Tokenizer(std::istream *ptr);
+    void ReadToken(TokenType expected = TokenType::NONE);
     Token GetToken() const;
 
 private:
