@@ -1,10 +1,4 @@
-// WARNING(helloclock): for ease of debugging, formatted code is PRINTED, NOT WRITTEN TO FILE
 #include "parser.h"
-
-#include <memory>
-#include <stdexcept>
-#include <unordered_map>
-#include <variant>
 
 #include "tokenizer.h"
 
@@ -21,85 +15,6 @@ void Imports::AddImport(const std::string& module_name, const std::string& alias
         modules_map_[module_name] = {alias, functions};
     } else {  // Just append functions to an already imported module
         modules_map_[module_name].second.insert(functions.begin(), functions.end());
-    }
-}
-
-void BinaryOperation::Print() const {
-    std::cout << "(";
-    std::visit(ExpressionPrintVisitor{}, *lhs_);
-    std::cout << " " << kOperatorRepr.at(op_) << " ";
-    std::visit(ExpressionPrintVisitor{}, *rhs_);
-    std::cout << ")";
-}
-
-void FunctionCall::Print() const {
-    std::cout << name_ << "(";
-    for (const Expression& expr : args_) {
-        std::visit(ExpressionPrintVisitor{}, expr);
-        std::cout << ", ";
-    }
-    std::cout << ")";
-}
-
-void Variable::Print() const {
-    std::cout << name_;
-}
-
-void Number::Print() const {
-    std::cout << value_;
-}
-
-void Float::Print() const {
-    std::cout << value_;
-}
-
-void Constant::Print() const {
-    std::cout << "let " << name_ << " := ";
-    std::visit(ExpressionPrintVisitor{}, value_);
-    std::cout << std::endl;
-}
-
-void Function::Print() const {
-    std::cout << "let " << name_ << "(";
-    for (const auto& param : parameters_) {
-        std::cout << param << ", ";
-    }
-    std::cout << ") := ";
-    std::visit(ExpressionPrintVisitor{}, value_);
-    if (body_) {
-        std::cout << " where" << std::endl;
-        body_->Print();
-    }
-    std::cout << std::endl;
-}
-
-void Imports::Print() const {
-    for (auto const& [name, info] : modules_map_) {
-        std::cout << "import " << name << " ";
-        const auto& [alias, functions] = info;
-        if (name != alias) {
-            std::cout << "as " << alias << " ";
-        }
-        if (!functions.empty()) {
-            std::cout << "(";
-            for (const auto& f : functions) {
-                std::cout << f << ", ";
-            }
-            std::cout << ")";
-        }
-        std::cout << std::endl;
-    }
-}
-
-void Module::Print() const {
-    if (!name_.empty()) {
-        std::cout << "module " << name_ << " where" << std::endl;
-    }
-    // print imports
-    imports_.Print();
-    for (const Declaration& decl : declarations_) {
-        // print declaration
-        std::visit(DeclarationPrintVisitor{}, decl);
     }
 }
 
