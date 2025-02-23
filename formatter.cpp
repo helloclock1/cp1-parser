@@ -102,9 +102,9 @@ void CodeGenerator::GenerateFunction(const Function& func) {
     }
 }
 
-void CodeGenerator::GenerateExpression(const Expression& expr) {
+void CodeGenerator::GenerateExpression(const Expression& expr, int parent_precedence) {
     if (std::holds_alternative<BinaryOperation>(expr)) {
-        GenerateBinaryOperation(std::get<BinaryOperation>(expr));
+        GenerateBinaryOperation(std::get<BinaryOperation>(expr), parent_precedence);
     } else if (std::holds_alternative<FunctionCall>(expr)) {
         GenerateFunctionCall(std::get<FunctionCall>(expr));
     } else if (std::holds_alternative<Variable>(expr)) {
@@ -124,12 +124,31 @@ const std::unordered_map<Operator, std::string> kOperatorToRepr = {{Operator::AD
                                                                    {Operator::DIV, "/"},
                                                                    {Operator::POW, "^"}};
 
-void CodeGenerator::GenerateBinaryOperation(const BinaryOperation& op) {
-    out_ << "(";
-    GenerateExpression(*op.lhs_);
+const std::unordered_map<Operator, int> kOperatorPriority = {{Operator::ADD, 1},
+                                                             {Operator::SUB, 1},
+                                                             {Operator::MUL, 2},
+                                                             {Operator::DIV, 2},
+                                                             {Operator::POW, 3}};
+
+// TODO(helloclock): looks horrible maybe i should rewrite it
+void CodeGenerator::GenerateBinaryOperation(const BinaryOperation& op, int parent_precedence) {
+    int child_precedence = kOperatorPriority.at(op.op_);
+    bool place_brackets = child_precedence < parent_precedence;
+    if (place_brackets) {
+        out_ << "(";
+    }
+    int lhs_precedence = child_precedence, rhs_precedence = child_precedence;
+    if (op.op_ == Operator::POW) {
+        ++lhs_precedence;
+    } else {
+        ++rhs_precedence;
+    }
+    GenerateExpression(*op.lhs_, lhs_precedence);
     out_ << " " << kOperatorToRepr.at(op.op_) << " ";
-    GenerateExpression(*op.rhs_);
-    out_ << ")";
+    GenerateExpression(*op.rhs_, rhs_precedence);
+    if (place_brackets) {
+        out_ << ")";
+    }
 }
 
 void CodeGenerator::GenerateFunctionCall(const FunctionCall& call) {

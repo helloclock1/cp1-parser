@@ -27,8 +27,8 @@ private:
     void GenerateConstant(const Constant& constant);
     void GenerateFunction(const Function& func);
 
-    void GenerateExpression(const Expression& expr);
-    void GenerateBinaryOperation(const BinaryOperation& op);
+    void GenerateExpression(const Expression& expr, int parent_precedence = 0);
+    void GenerateBinaryOperation(const BinaryOperation& op, int parent_precedence = 0);
     void GenerateFunctionCall(const FunctionCall& call);
     void GenerateVariable(const Variable& var);
     void GenerateNumber(const Number& n);

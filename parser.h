@@ -39,6 +39,7 @@ struct BinaryOperation {
     std::unique_ptr<Expression> lhs_;
     Operator op_;
     std::unique_ptr<Expression> rhs_;
+    int parent_priority_ = -1;
 };
 struct FunctionCall {
     std::string name_;
@@ -85,9 +86,9 @@ private:
     std::set<std::string> ParseImportFunctions();
 
     Expression ParseExpression();
-    Expression ParseAddSub();
-    Expression ParseMulDiv();
-    Expression ParsePow();
+    Expression ParseAddSub(int parent_priority);
+    Expression ParseMulDiv(int parent_priority);
+    Expression ParsePow(int parent_priority);
     Expression ParseAtom();
 
     Tokenizer& tokenizer_;

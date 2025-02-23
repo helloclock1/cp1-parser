@@ -163,41 +163,47 @@ std::set<std::string> Parser::ParseImportFunctions() {
     return functions;
 }
 
+const std::unordered_map<Operator, int> kOperatorPrecedence = {{Operator::ADD, 1},
+                                                               {Operator::SUB, 1},
+                                                               {Operator::MUL, 2},
+                                                               {Operator::DIV, 2},
+                                                               {Operator::POW, 3}};
+
 Expression Parser::ParseExpression() {
-    return ParseAddSub();
+    return ParseAddSub(-1);
 }
 
-Expression Parser::ParseAddSub() {
-    auto lhs = ParseMulDiv();
+Expression Parser::ParseAddSub(int parent_priority) {
+    auto lhs = ParseMulDiv(parent_priority);
     while (CurrentTokenType() == TokenType::ADD || CurrentTokenType() == TokenType::SUB) {
         auto op = CurrentTokenType() == TokenType::ADD ? Operator::ADD : Operator::SUB;
         tokenizer_.ReadToken();
-        auto rhs = ParseMulDiv();
+        auto rhs = ParseMulDiv(kOperatorPrecedence.at(op));
         lhs = BinaryOperation{std::make_unique<Expression>(std::move(lhs)), op,
-                              std::make_unique<Expression>(std::move(rhs))};
+                              std::make_unique<Expression>(std::move(rhs)), parent_priority};
     }
     return lhs;
 }
 
-Expression Parser::ParseMulDiv() {
-    auto lhs = ParsePow();
+Expression Parser::ParseMulDiv(int parent_priority) {
+    auto lhs = ParsePow(parent_priority);
     while (CurrentTokenType() == TokenType::MUL || CurrentTokenType() == TokenType::DIV) {
         auto op = CurrentTokenType() == TokenType::MUL ? Operator::MUL : Operator::DIV;
         tokenizer_.ReadToken();
-        auto rhs = ParsePow();
+        auto rhs = ParsePow(kOperatorPrecedence.at(op));
         lhs = BinaryOperation{std::make_unique<Expression>(std::move(lhs)), op,
-                              std::make_unique<Expression>(std::move(rhs))};
+                              std::make_unique<Expression>(std::move(rhs)), parent_priority};
     }
     return lhs;
 }
 
-Expression Parser::ParsePow() {
+Expression Parser::ParsePow(int parent_priority) {
     auto lhs = ParseAtom();
     while (CurrentTokenType() == TokenType::POW) {
         tokenizer_.ReadToken();
         auto rhs = ParseAtom();
         lhs = BinaryOperation{std::make_unique<Expression>(std::move(lhs)), Operator::POW,
-                              std::make_unique<Expression>(std::move(rhs))};
+                              std::make_unique<Expression>(std::move(rhs)), parent_priority};
     }
     return lhs;
 }
