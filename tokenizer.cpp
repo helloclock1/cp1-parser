@@ -100,7 +100,7 @@ void Tokenizer::ReadToken(TokenType expected) {
         throw std::runtime_error("Unknown symbol encountered.");
     }
     if (expected != TokenType::NONE && current_token_.GetType() != expected) {
-        throw std::runtime_error("Unknown token encountered.");
+        throw std::runtime_error("Unexpected token encountered.");
     }
 }
 

@@ -71,5 +71,3 @@ private:
     Token current_token_;
     size_t current_indent_ = 0;
 };
-
-void ParseImports(Tokenizer &tokenizer);

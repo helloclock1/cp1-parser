@@ -124,15 +124,15 @@ const std::unordered_map<Operator, std::string> kOperatorToRepr = {{Operator::AD
                                                                    {Operator::DIV, "/"},
                                                                    {Operator::POW, "^"}};
 
-const std::unordered_map<Operator, int> kOperatorPriority = {{Operator::ADD, 1},
-                                                             {Operator::SUB, 1},
-                                                             {Operator::MUL, 2},
-                                                             {Operator::DIV, 2},
-                                                             {Operator::POW, 3}};
+const std::unordered_map<Operator, int> kOperatorPrecedence = {{Operator::ADD, 1},
+                                                               {Operator::SUB, 1},
+                                                               {Operator::MUL, 2},
+                                                               {Operator::DIV, 2},
+                                                               {Operator::POW, 3}};
 
 // TODO(helloclock): looks horrible maybe i should rewrite it
 void CodeGenerator::GenerateBinaryOperation(const BinaryOperation& op, int parent_precedence) {
-    int child_precedence = kOperatorPriority.at(op.op_);
+    int child_precedence = kOperatorPrecedence.at(op.op_);
     bool place_brackets = child_precedence < parent_precedence;
     if (place_brackets) {
         out_ << "(";

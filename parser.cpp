@@ -44,7 +44,7 @@ Module Parser::ParseModule() {
                 tokenizer_.ReadToken();
                 break;
             default:
-                throw std::runtime_error("Unexpected token in module encountered.");
+                throw std::runtime_error("Unexpected token encountered.");
         }
     }
 }
@@ -112,6 +112,7 @@ Declaration Parser::ParseLet() {
         tokenizer_.ReadToken();
         body = std::make_unique<Module>(ParseModule());
     }
+    tokenizer_.ReadToken();
     return parameters.empty()
                ? Declaration(Constant{name, std::move(value)})
                : Declaration(Function{name, parameters, std::move(value), std::move(body)});
