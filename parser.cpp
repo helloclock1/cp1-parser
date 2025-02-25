@@ -44,7 +44,8 @@ Module Parser::ParseModule() {
                 tokenizer_.ReadToken();
                 break;
             default:
-                throw std::runtime_error("Unexpected token encountered.");
+                std::cerr << "Unexpected token encountered.\n";
+                exit(2);
         }
     }
 }
@@ -63,7 +64,8 @@ std::string Parser::CurrentTokenLexeme() const {
 
 void Parser::ExpectType(TokenType type) {
     if (CurrentToken().GetType() != type) {
-        throw std::runtime_error("Unexpected token encountered.");
+        std::cerr << "Unexpected token encountered.\n";
+        exit(2);
     }
 }
 
@@ -127,12 +129,14 @@ Module Parser::ParseSubmodule() {
         tokenizer_.ReadToken();
     }
     if (CurrentTokenType() != TokenType::INDENT) {
-        throw std::runtime_error("Expected indent after submodule declaration");
+        std::cerr << "Expected an indent after submodule declaration.\n";
+        exit(2);
     }
     tokenizer_.ReadToken();
     Module submodule = ParseModule();
     if (CurrentTokenType() != TokenType::DEDENT && CurrentTokenType() != TokenType::FILE_END) {
-        throw std::runtime_error("Expected dedent after submodule body");
+        std::cerr << "Expected a dedent after a substructure body.\n";
+        exit(2);
     }
     tokenizer_.ReadToken();
     submodule.name_ = submodule_name;
@@ -238,6 +242,7 @@ Expression Parser::ParseAtom() {
         tokenizer_.ReadToken();
         return expr;
     } else {
-        throw std::runtime_error("Unexpected token in expression encountered.");
+        std::cerr << "Unexpected token in expression encountered.\n";
+        exit(2);
     }
 }

@@ -1,5 +1,4 @@
 #include <ostream>
-#include <stdexcept>
 #include <variant>
 
 #include "parser.h"

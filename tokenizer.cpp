@@ -17,7 +17,9 @@ const std::string &Token::GetLexeme() const {
     if (lexeme_.has_value()) {
         return lexeme_.value();
     }
-    throw std::logic_error("Trying to access a lexeme of a non-word token.");
+    std::cerr << "Trying to access a lexeme of a non-identifier-like token. This is most likely an "
+                 "error on program's side.\n";
+    exit(1);
 }
 
 Tokenizer::Tokenizer(std::istream *ptr) : in_(ptr) {
@@ -47,7 +49,8 @@ void Tokenizer::ReadToken(TokenType expected) {
                 current_token_ = Token(TokenType::INDENT);
                 return;
             } else {
-                throw std::runtime_error("Encountered an indent greater than initial.");
+                std::cerr << "Encountered an indent greater than the indent of the block.\n";
+                exit(1);
             }
         } else if (new_indent < current_indent_spaces_) {
             if (indentation_level_ != 0) {
@@ -57,8 +60,8 @@ void Tokenizer::ReadToken(TokenType expected) {
                 current_token_ = Token(TokenType::DEDENT);
                 return;
             } else {
-                throw std::runtime_error(
-                    "Encountered a dedent to a negative level of indentation.");
+                std::cerr << "Encountered more dedents than there were indents prior.\n";
+                exit(1);
             }
         }
         substruct_started_ = false;
@@ -84,7 +87,8 @@ void Tokenizer::ReadToken(TokenType expected) {
         if (in_->get() == '=') {
             current_token_ = Token(TokenType::ASSIGN, ":=");
         } else {
-            throw std::runtime_error("bruh");
+            std::cerr << "Unknown symbol encountered while tokenizing.\n";
+            exit(1);
         }
     } else if (in_->peek() == '\n') {
         in_->get();
@@ -112,10 +116,12 @@ void Tokenizer::ReadToken(TokenType expected) {
         current_token_ = Token(TokenType::POW, "^");
     } else if (in_->peek() == -1) {
     } else {
-        throw std::runtime_error("Unknown symbol encountered.");
+        std::cerr << "Unknown symbol encountered while tokenizing.\n";
+        exit(1);
     }
     if (expected != TokenType::NONE && current_token_.GetType() != expected) {
-        throw std::runtime_error("Unexpected token encountered.");
+        std::cerr << "Unexpected token encountered.\n";
+        exit(1);
     }
 }
 
@@ -145,8 +151,8 @@ void Tokenizer::ReadNumber() {
         token_string += in_->get();
     }
     if (std::isalpha(in_->peek())) {
-        throw std::runtime_error(
-            "Encountered a token starting with a number that is not a number itself.");
+        std::cerr << "Encountered a token starting with a number that is not a number itself.\n";
+        exit(1);
     }
     current_token_ = Token(TokenType::NUMBER, token_string);
 }

@@ -114,7 +114,8 @@ void CodeGenerator::GenerateExpression(const Expression& expr, int parent_preced
     } else if (std::holds_alternative<Float>(expr)) {
         GenerateFloat(std::get<Float>(expr));
     } else {
-        throw std::logic_error("Token type to be outputted is not yet supported.");
+        std::cerr << "Token type to be outputted is not yet supported.\n";
+        exit(3);
     }
 }
 
