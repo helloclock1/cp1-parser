@@ -1,6 +1,10 @@
 #pragma once
 
+#include <cstddef>
 #include <iostream>
+#include <optional>
+#include <stack>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <variant>
@@ -43,6 +47,7 @@ enum class TokenType {
 class Token {
 public:
     Token();
+    Token(TokenType type);
     Token(TokenType type, std::string lexeme);
 
     TokenType GetType() const;
@@ -54,7 +59,7 @@ public:
 
 private:
     TokenType type_;
-    std::string lexeme_;
+    std::optional<std::string> lexeme_;
 };
 
 class Tokenizer {
@@ -69,5 +74,10 @@ private:
 
     std::istream *in_;
     Token current_token_;
-    size_t current_indent_ = 0;
+
+    // Context for processing indentation
+    bool substruct_started_ = false;
+    std::stack<size_t> indents_;
+    size_t current_indent_spaces_ = 0;
+    size_t indentation_level_ = 0;
 };

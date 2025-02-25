@@ -1,8 +1,9 @@
-// TODO(helloclock): fix tokenizer entering an infinite loop on empty lines (fixed itself somehow
-// lol)
 #include "tokenizer.h"
 
 Token::Token() : type_(TokenType::EOL), lexeme_("\\n") {
+}
+
+Token::Token(TokenType type) : type_(type) {
 }
 
 Token::Token(TokenType type, std::string lexeme) : type_(type), lexeme_(lexeme) {
@@ -13,7 +14,10 @@ TokenType Token::GetType() const {
 }
 
 const std::string &Token::GetLexeme() const {
-    return lexeme_;
+    if (lexeme_.has_value()) {
+        return lexeme_.value();
+    }
+    throw std::logic_error("Trying to access a lexeme of a non-word token.");
 }
 
 Tokenizer::Tokenizer(std::istream *ptr) : in_(ptr) {
@@ -26,33 +30,38 @@ void Tokenizer::ReadToken(TokenType expected) {
         return;
     }
     while (current_token_.GetType() == TokenType::EOL && in_->peek() == '\n') {
-        // encountered empty line, ignore
         in_->get();
         return;
     }
     if (current_token_.GetType() == TokenType::EOL) {
-        /* TODO(helloclock):
-         * Currently only Python-like indentation is supported (i.e., indentation in the input file
-         * must be fixed, in this case 2, spaces per level)
-         */
         size_t new_indent = 0;
         while (std::isspace(in_->peek()) && in_->peek() != '\n') {
             in_->get();
             ++new_indent;
         }
-        new_indent /= 2;
-        bool dent_symbol = false;
-        if (new_indent > current_indent_) {
-            current_token_ = Token(TokenType::INDENT, "  ");
-            dent_symbol = true;
-        } else if (new_indent < current_indent_) {
-            current_token_ = Token(TokenType::DEDENT, "");
-            dent_symbol = true;
+        if (new_indent > current_indent_spaces_) {
+            if (new_indent >= 2 && new_indent - 2 >= current_indent_spaces_ && substruct_started_) {
+                current_indent_spaces_ += new_indent;
+                indents_.push(new_indent);
+                ++indentation_level_;
+                current_token_ = Token(TokenType::INDENT);
+                return;
+            } else {
+                throw std::runtime_error("Encountered an indent greater than initial.");
+            }
+        } else if (new_indent < current_indent_spaces_) {
+            if (indentation_level_ != 0) {
+                current_indent_spaces_ -= indents_.top();
+                indents_.pop();
+                --indentation_level_;
+                current_token_ = Token(TokenType::DEDENT);
+                return;
+            } else {
+                throw std::runtime_error(
+                    "Encountered a dedent to a negative level of indentation.");
+            }
         }
-        current_indent_ = new_indent;
-        if (dent_symbol) {
-            return;
-        }
+        substruct_started_ = false;
     } else {
         // processing useless whitespace characters
         while (std::isspace(in_->peek()) && in_->peek() != '\n') {
@@ -151,5 +160,8 @@ void Tokenizer::ReadWord() {
         current_token_ = kStringToToken[token_string];
     } else {
         current_token_ = Token(TokenType::IDENTIFIER, token_string);
+    }
+    if (current_token_.GetType() == TokenType::WHERE) {
+        substruct_started_ = true;
     }
 }
