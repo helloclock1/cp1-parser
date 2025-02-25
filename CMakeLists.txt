@@ -12,3 +12,5 @@ target_include_directories(parser_lib
 add_executable(beautify apps/main.cpp)
 
 target_link_libraries(beautify PRIVATE parser_lib)
+
+target_compile_options(beautify PRIVATE -Werror -Wall -Wextra -pedantic)
