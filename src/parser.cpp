@@ -1,6 +1,5 @@
-#include "parser.h"
-
-#include "tokenizer.h"
+#include <parser/parser.h>
+#include <parser/tokenizer.h>
 
 const std::unordered_map<Operator, std::string> kOperatorRepr = {{Operator::ADD, "+"},
                                                                  {Operator::SUB, "-"},

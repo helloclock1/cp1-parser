@@ -1,6 +1,5 @@
-#include "formatter.h"
-
-#include "parser.h"
+#include <parser/formatter.h>
+#include <parser/parser.h>
 
 CodeGenerator::CodeGenerator(std::ostream& out) : out_(out) {
 }
@@ -45,7 +44,7 @@ void CodeGenerator::GenerateModule(const Module& module) {
 }
 
 void CodeGenerator::GenerateImports(const Imports& imports) {
-    for (auto const [name, info] : imports.modules_map_) {
+    for (auto const& [name, info] : imports.modules_map_) {
         auto [alias, funcs] = info;
         out_ << "import " << name;
         if (name != alias) {

@@ -11,7 +11,7 @@
 
 #include "tokenizer.h"
 
-class Module;
+struct Module;
 struct BinaryOperation;
 struct FunctionCall;
 struct Function;

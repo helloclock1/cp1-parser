@@ -1,4 +1,4 @@
-#include "tokenizer.h"
+#include <parser/tokenizer.h>
 
 Token::Token() : type_(TokenType::EOL), lexeme_("\\n") {
 }
@@ -27,7 +27,6 @@ Tokenizer::Tokenizer(std::istream *ptr) : in_(ptr) {
 
 void Tokenizer::ReadToken(TokenType expected) {
     if (in_->peek() == -1) {
-        std::cout << "Tokenizing done, exiting...\n";
         current_token_ = Token(TokenType::FILE_END, "file_end");
         return;
     }
