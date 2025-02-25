@@ -34,12 +34,12 @@ struct Float {
     double value_;
 };
 using Expression = std::variant<BinaryOperation, FunctionCall, Variable, Number, Float>;
-enum class Operator { ADD, SUB, MUL, DIV, POW };
+enum class Operator { ADD, SUB, MUL, DIV, POW, ROOT };
 struct BinaryOperation {
     std::unique_ptr<Expression> lhs_;
     Operator op_;
     std::unique_ptr<Expression> rhs_;
-    int parent_priority_ = -1;
+    Operator parent_operator_ = Operator::ROOT;
 };
 struct FunctionCall {
     std::string name_;
@@ -86,9 +86,9 @@ private:
     std::set<std::string> ParseImportFunctions();
 
     Expression ParseExpression();
-    Expression ParseAddSub(int parent_priority);
-    Expression ParseMulDiv(int parent_priority);
-    Expression ParsePow(int parent_priority);
+    Expression ParseAddSub(Operator parent_operator);
+    Expression ParseMulDiv(Operator parent_operator);
+    Expression ParsePow(Operator parent_operator);
     Expression ParseAtom();
 
     Tokenizer& tokenizer_;

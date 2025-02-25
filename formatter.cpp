@@ -133,7 +133,9 @@ const std::unordered_map<Operator, int> kOperatorPrecedence = {{Operator::ADD, 1
 // TODO(helloclock): looks horrible maybe i should rewrite it
 void CodeGenerator::GenerateBinaryOperation(const BinaryOperation& op, int parent_precedence) {
     int child_precedence = kOperatorPrecedence.at(op.op_);
-    bool place_brackets = child_precedence < parent_precedence;
+    bool place_brackets = (child_precedence < parent_precedence) &&
+                          !((op.parent_operator_ == Operator::MUL && op.op_ == Operator::MUL) ||
+                            (op.parent_operator_ == Operator::ADD && op.op_ == Operator::ADD));
     if (place_brackets) {
         out_ << "(";
     }
