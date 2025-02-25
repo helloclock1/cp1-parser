@@ -149,11 +149,21 @@ void Tokenizer::ReadNumber() {
     while (std::isdigit(in_->peek())) {
         token_string += in_->get();
     }
+    bool is_float = false;
+    if (in_->peek() == '.') {
+        std::cout << "processing float\n";
+        is_float = true;
+        token_string += in_->get();
+        while (std::isdigit(in_->peek())) {
+            token_string += in_->get();
+        }
+    }
     if (std::isalpha(in_->peek())) {
         std::cerr << "Encountered a token starting with a number that is not a number itself.\n";
         exit(1);
     }
-    current_token_ = Token(TokenType::NUMBER, token_string);
+    current_token_ =
+        is_float ? Token(TokenType::FLOAT, token_string) : Token(TokenType::NUMBER, token_string);
 }
 
 void Tokenizer::ReadWord() {

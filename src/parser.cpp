@@ -234,6 +234,10 @@ Expression Parser::ParseAtom() {
         int value = std::stoi(CurrentTokenLexeme());
         tokenizer_.ReadToken();
         return Number{value};
+    } else if (CurrentTokenType() == TokenType::FLOAT) {
+        float value = std::stof(CurrentTokenLexeme());
+        tokenizer_.ReadToken();
+        return Float{value};
     } else if (CurrentTokenType() == TokenType::L_BRACKET) {
         tokenizer_.ReadToken();
         auto expr = ParseExpression();

@@ -39,6 +39,7 @@ enum class TokenType {
     IDENTIFIER,
     // LITERAL
     NUMBER,
+    FLOAT,
 
     NONE
 };
