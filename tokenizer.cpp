@@ -2,7 +2,7 @@
 // lol)
 #include "tokenizer.h"
 
-Token::Token() : type_(TokenType::EOL), lexeme_("\n") {
+Token::Token() : type_(TokenType::EOL), lexeme_("\\n") {
 }
 
 Token::Token(TokenType type, std::string lexeme) : type_(type), lexeme_(lexeme) {
@@ -22,9 +22,15 @@ Tokenizer::Tokenizer(std::istream *ptr) : in_(ptr) {
 void Tokenizer::ReadToken(TokenType expected) {
     if (in_->peek() == -1) {
         std::cout << "Tokenizing done, exiting...\n";
-        current_token_ = Token(TokenType::FILE_END, "");
+        current_token_ = Token(TokenType::FILE_END, "file_end");
+        return;
     }
-    if (current_token_.GetType() == TokenType::EOL && std::isspace(in_->peek())) {
+    while (current_token_.GetType() == TokenType::EOL && in_->peek() == '\n') {
+        // encountered empty line, ignore
+        in_->get();
+        return;
+    }
+    if (current_token_.GetType() == TokenType::EOL) {
         /* TODO(helloclock):
          * Currently only Python-like indentation is supported (i.e., indentation in the input file
          * must be fixed, in this case 2, spaces per level)
