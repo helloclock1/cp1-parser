@@ -101,9 +101,9 @@ void CodeGenerator::GenerateFunction(const Function& func) {
     }
 }
 
-void CodeGenerator::GenerateExpression(const Expression& expr, int parent_precedence) {
+void CodeGenerator::GenerateExpression(const Expression& expr, int parent_precedence, Operator parent_operator) {
     if (std::holds_alternative<BinaryOperation>(expr)) {
-        GenerateBinaryOperation(std::get<BinaryOperation>(expr), parent_precedence);
+        GenerateBinaryOperation(std::get<BinaryOperation>(expr), parent_precedence, parent_operator);
     } else if (std::holds_alternative<FunctionCall>(expr)) {
         GenerateFunctionCall(std::get<FunctionCall>(expr));
     } else if (std::holds_alternative<Variable>(expr)) {
@@ -118,36 +118,34 @@ void CodeGenerator::GenerateExpression(const Expression& expr, int parent_preced
     }
 }
 
-const std::unordered_map<Operator, std::string> kOperatorToRepr = {{Operator::ADD, "+"},
-                                                                   {Operator::SUB, "-"},
-                                                                   {Operator::MUL, "*"},
-                                                                   {Operator::DIV, "/"},
-                                                                   {Operator::POW, "^"}};
+const std::unordered_map<Operator, std::string> kOperatorToRepr = {
+    {Operator::ADD, "+"}, {Operator::SUB, "-"}, {Operator::MUL, "*"}, {Operator::DIV, "/"}, {Operator::POW, "^"}};
 
-const std::unordered_map<Operator, int> kOperatorPrecedence = {{Operator::ADD, 1},
-                                                               {Operator::SUB, 1},
-                                                               {Operator::MUL, 2},
-                                                               {Operator::DIV, 2},
-                                                               {Operator::POW, 3}};
+const std::unordered_map<Operator, int> kOperatorPrecedence = {
+    {Operator::ADD, 1}, {Operator::SUB, 1}, {Operator::MUL, 2}, {Operator::DIV, 2}, {Operator::POW, 3}};
 
-// TODO(helloclock): looks horrible maybe i should rewrite it
-void CodeGenerator::GenerateBinaryOperation(const BinaryOperation& op, int parent_precedence) {
-    int child_precedence = kOperatorPrecedence.at(op.op_);
-    bool place_brackets = (child_precedence < parent_precedence) &&
-                          !((op.parent_operator_ == Operator::MUL && op.op_ == Operator::MUL) ||
-                            (op.parent_operator_ == Operator::ADD && op.op_ == Operator::ADD));
+void CodeGenerator::GenerateBinaryOperation(const BinaryOperation& op, int parent_precedence,
+                                            Operator parent_operator) {
+    int current_precedence = kOperatorPrecedence.at(op.op_);
+    bool place_brackets = false;
+    if (current_precedence < parent_precedence) {
+        bool associative = op.op_ == Operator::ADD || op.op_ == Operator::MUL;
+        if (!(associative && parent_operator == op.op_)) {
+            place_brackets = true;
+        }
+    }
     if (place_brackets) {
         out_ << "(";
     }
-    int lhs_precedence = child_precedence, rhs_precedence = child_precedence;
+    int lhs_precedence = current_precedence, rhs_precedence = current_precedence;
     if (op.op_ == Operator::POW) {
         ++lhs_precedence;
     } else {
         ++rhs_precedence;
     }
-    GenerateExpression(*op.lhs_, lhs_precedence);
+    GenerateExpression(*op.lhs_, lhs_precedence, op.op_);
     out_ << " " << kOperatorToRepr.at(op.op_) << " ";
-    GenerateExpression(*op.rhs_, rhs_precedence);
+    GenerateExpression(*op.rhs_, rhs_precedence, op.op_);
     if (place_brackets) {
         out_ << ")";
     }
