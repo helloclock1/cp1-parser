@@ -22,10 +22,10 @@ void usage() {
 
 // Returns an object of structure {{input filename, output filename (stdout if empty)}, spaces per tab}
 std::pair<std::pair<std::string, std::string>, size_t> ParseArgs(int argc, char* argv[]) {
-    std::string in_filename = argv[1];
+    std::string in_filename;
     std::string out_filename;
     size_t spaces = 8;
-    for (int i = 0; i < argc; ++i) {
+    for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--help") {
             usage();
@@ -60,7 +60,7 @@ std::pair<std::pair<std::string, std::string>, size_t> ParseArgs(int argc, char*
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 2 || argc > 3) {
+    if (argc < 2 || argc > 4) {
         usage();
         return 0;
     }
