@@ -65,7 +65,7 @@ private:
 
 class Tokenizer {
 public:
-    Tokenizer(std::istream *ptr);
+    Tokenizer(std::istream *ptr, size_t spaces_per_tab);
     void ReadToken(TokenType expected = TokenType::NONE);
     Token GetToken() const;
 
@@ -75,6 +75,8 @@ private:
 
     std::istream *in_;
     Token current_token_;
+
+    size_t spaces_per_tab_;
 
     // Context for processing indentation
     bool substruct_started_ = false;

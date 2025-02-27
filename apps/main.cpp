@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "File `" << in_filename << "` does not exist.\n";
         return 1;
     }
-    Tokenizer tokenizer(&in);
+    Tokenizer tokenizer(&in, spaces);
     Parser parser(tokenizer);
     Module file = parser.ParseModule();
     if (out_filename.empty()) {

@@ -22,7 +22,7 @@ const std::string &Token::GetLexeme() const {
     exit(1);
 }
 
-Tokenizer::Tokenizer(std::istream *ptr) : in_(ptr) {
+Tokenizer::Tokenizer(std::istream *ptr, size_t spaces_per_tab) : in_(ptr), spaces_per_tab_(spaces_per_tab) {
 }
 
 void Tokenizer::ReadToken(TokenType expected) {
@@ -37,8 +37,12 @@ void Tokenizer::ReadToken(TokenType expected) {
     if (current_token_.GetType() == TokenType::EOL) {
         size_t new_indent = 0;
         while (std::isspace(in_->peek()) && in_->peek() != '\n') {
+            if (in_->peek() == '\t') {
+                new_indent += spaces_per_tab_;
+            } else {
+                ++new_indent;
+            }
             in_->get();
-            ++new_indent;
         }
         if (new_indent > current_indent_spaces_) {
             if (new_indent >= 2 && new_indent - 2 >= current_indent_spaces_ && substruct_started_) {
@@ -136,12 +140,11 @@ bool Token::operator!=(const Token &other) const {
     return !(*this == other);
 }
 
-std::unordered_map<std::string, Token> kStringToToken = {
-    {"import", Token(TokenType::IMPORT, "import")},
-    {"let", Token(TokenType::LET, "let")},
-    {"as", Token(TokenType::AS, "as")},
-    {"where", Token(TokenType::WHERE, "where")},
-    {"module", Token(TokenType::MODULE, "module")}};
+std::unordered_map<std::string, Token> kStringToToken = {{"import", Token(TokenType::IMPORT, "import")},
+                                                         {"let", Token(TokenType::LET, "let")},
+                                                         {"as", Token(TokenType::AS, "as")},
+                                                         {"where", Token(TokenType::WHERE, "where")},
+                                                         {"module", Token(TokenType::MODULE, "module")}};
 
 void Tokenizer::ReadNumber() {
     // TODO(helloclock): add float support
@@ -162,8 +165,7 @@ void Tokenizer::ReadNumber() {
         std::cerr << "Encountered a token starting with a number that is not a number itself.\n";
         exit(1);
     }
-    current_token_ =
-        is_float ? Token(TokenType::FLOAT, token_string) : Token(TokenType::NUMBER, token_string);
+    current_token_ = is_float ? Token(TokenType::FLOAT, token_string) : Token(TokenType::NUMBER, token_string);
 }
 
 void Tokenizer::ReadWord() {
