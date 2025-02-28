@@ -50,8 +50,8 @@ void Tokenizer::ReadToken(TokenType expected) {
         }
         if (new_indent > current_indent_spaces_) {
             if (new_indent >= 2 && new_indent - 2 >= current_indent_spaces_ && substruct_started_) {
+                indents_.push(new_indent - current_indent_spaces_);
                 current_indent_spaces_ = new_indent;
-                indents_.push(new_indent);
                 ++indentation_level_;
                 current_token_ = Token(TokenType::INDENT);
                 return;
