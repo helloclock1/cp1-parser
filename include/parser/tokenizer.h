@@ -78,6 +78,8 @@ private:
 
     size_t spaces_per_tab_;
 
+    size_t dedents_ = 0;
+
     // Context for processing indentation
     bool substruct_started_ = false;
     std::stack<size_t> indents_;

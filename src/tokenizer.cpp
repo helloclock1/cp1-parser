@@ -26,6 +26,11 @@ Tokenizer::Tokenizer(std::istream *ptr, size_t spaces_per_tab) : in_(ptr), space
 }
 
 void Tokenizer::ReadToken(TokenType expected) {
+    if (dedents_ > 0) {
+        --dedents_;
+        current_token_ = Token(TokenType::DEDENT);
+        return;
+    }
     if (in_->peek() == -1) {
         current_token_ = Token(TokenType::FILE_END, "file_end");
         return;
@@ -61,8 +66,17 @@ void Tokenizer::ReadToken(TokenType expected) {
             }
         } else if (new_indent < current_indent_spaces_) {
             if (indentation_level_ != 0) {
-                current_indent_spaces_ -= indents_.top();
-                indents_.pop();
+                size_t space_diff = current_indent_spaces_ - new_indent;
+                while (new_indent < current_indent_spaces_) {
+                    current_indent_spaces_ -= indents_.top();
+                    indents_.pop();
+                    ++dedents_;
+                }
+                if (new_indent != current_indent_spaces_) {
+                    std::cerr << "Unexpected indentation encountered\n";
+                    exit(1);
+                }
+                --dedents_;
                 --indentation_level_;
                 current_token_ = Token(TokenType::DEDENT);
                 return;
