@@ -26,7 +26,7 @@ void CodeGenerator::StartBlock() {
 
 void CodeGenerator::EndBlock() {
     --indent_level_;
-    NewLine();
+    // NewLine();
 }
 
 void CodeGenerator::GenerateModule(const Module& module) {
@@ -35,8 +35,28 @@ void CodeGenerator::GenerateModule(const Module& module) {
         StartBlock();
     }
     GenerateImports(module.imports_);
+    bool newline_after_decls = false;
     for (const auto& decl : module.declarations_) {
+        if (std::holds_alternative<Module>(decl)) {
+            const Module& submod = std::get<Module>(decl);
+            if (!submod.declarations_.empty() || !submod.imports_.modules_map_.empty()) {
+                newline_after_decls = true;
+                break;
+            }
+        }
+    }
+    bool first_decl = true;
+    for (const auto& decl : module.declarations_) {
+        if (!first_decl) {
+            if (newline_after_decls) {
+                out_ << "\n";
+                NewLine();
+            } else {
+                NewLine();
+            }
+        }
         GenerateDeclaration(decl);
+        first_decl = false;
     }
     if (!module.name_.empty()) {
         EndBlock();
@@ -77,7 +97,6 @@ void CodeGenerator::GenerateDeclaration(const Declaration& decl) {
 void CodeGenerator::GenerateConstant(const Constant& constant) {
     out_ << "let " << constant.name_ << " := ";
     GenerateExpression(constant.value_);
-    NewLine();
 }
 
 void CodeGenerator::GenerateFunction(const Function& func) {
@@ -96,8 +115,6 @@ void CodeGenerator::GenerateFunction(const Function& func) {
         StartBlock();
         GenerateModule(*func.body_);
         EndBlock();
-    } else {
-        NewLine();
     }
 }
 
