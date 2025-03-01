@@ -32,5 +32,5 @@ For more, call `beautify` executable for help:
 ## Roadmap
  - [x] Tokenization;
  - [x] Parsing into separate structures and classes;
- - [x] Beautify output (except empty lines between declarations of all kinds);
+ - [x] Beautify output;
  - [ ] Prod-ready to some degree.
