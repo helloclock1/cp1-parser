@@ -1,11 +1,8 @@
 #include <parser/parser.h>
 #include <parser/tokenizer.h>
 
-const std::unordered_map<Operator, std::string> kOperatorRepr = {{Operator::ADD, "+"},
-                                                                 {Operator::SUB, "-"},
-                                                                 {Operator::MUL, "*"},
-                                                                 {Operator::DIV, "/"},
-                                                                 {Operator::POW, "^"}};
+const std::unordered_map<Operator, std::string> kOperatorRepr = {
+    {Operator::ADD, "+"}, {Operator::SUB, "-"}, {Operator::MUL, "*"}, {Operator::DIV, "/"}, {Operator::POW, "^"}};
 
 void Imports::AddImport(const std::string& module_name, const std::string& alias = "",
                         std::set<std::string> functions = {}) {
@@ -73,12 +70,12 @@ void Parser::ParseImport(Module& module) {
     Imports imports;
     std::string module_name = ParseName();
     std::string alias = module_name;
-    if (CurrentToken().GetType() == TokenType::AS) {
+    if (CurrentTokenType() == TokenType::AS) {
         tokenizer_.ReadToken(TokenType::IDENTIFIER);
         alias = ParseName();
     }
     std::set<std::string> functions;
-    if (CurrentToken().GetType() == TokenType::L_BRACKET) {
+    if (CurrentTokenType() == TokenType::L_BRACKET) {
         functions = ParseImportFunctions();
         ExpectType(TokenType::R_BRACKET);
         tokenizer_.ReadToken();
@@ -114,9 +111,8 @@ Declaration Parser::ParseLet() {
         body = std::make_unique<Module>(ParseModule());
     }
     tokenizer_.ReadToken();
-    return parameters.empty()
-               ? Declaration(Constant{name, std::move(value)})
-               : Declaration(Function{name, parameters, std::move(value), std::move(body)});
+    return parameters.empty() ? Declaration(Constant{name, std::move(value)})
+                              : Declaration(Function{name, parameters, std::move(value), std::move(body)});
 }
 
 Module Parser::ParseSubmodule() {
@@ -145,7 +141,7 @@ Module Parser::ParseSubmodule() {
 const std::string Parser::ParseName() {
     std::string name = CurrentTokenLexeme();
     tokenizer_.ReadToken();
-    while (CurrentToken().GetType() == TokenType::DOT) {
+    while (CurrentTokenType() == TokenType::DOT) {
         name.append(CurrentTokenLexeme());
         tokenizer_.ReadToken(TokenType::IDENTIFIER);
         name.append(CurrentTokenLexeme());
@@ -159,7 +155,7 @@ std::set<std::string> Parser::ParseImportFunctions() {
     std::set<std::string> functions = {CurrentTokenLexeme()};
     tokenizer_.ReadToken();
 
-    while (CurrentToken().GetType() == TokenType::COMMA) {
+    while (CurrentTokenType() == TokenType::COMMA) {
         tokenizer_.ReadToken(TokenType::IDENTIFIER);
         functions.insert(CurrentTokenLexeme());
         tokenizer_.ReadToken();
@@ -167,11 +163,8 @@ std::set<std::string> Parser::ParseImportFunctions() {
     return functions;
 }
 
-const std::unordered_map<Operator, int> kOperatorPrecedence = {{Operator::ADD, 1},
-                                                               {Operator::SUB, 1},
-                                                               {Operator::MUL, 2},
-                                                               {Operator::DIV, 2},
-                                                               {Operator::POW, 3}};
+const std::unordered_map<Operator, int> kOperatorPrecedence = {
+    {Operator::ADD, 1}, {Operator::SUB, 1}, {Operator::MUL, 2}, {Operator::DIV, 2}, {Operator::POW, 3}};
 
 Expression Parser::ParseExpression() {
     return ParseAddSub(Operator::ROOT);
