@@ -26,7 +26,6 @@ void CodeGenerator::StartBlock() {
 
 void CodeGenerator::EndBlock() {
     --indent_level_;
-    // NewLine();
 }
 
 void CodeGenerator::GenerateModule(const Module& module) {
@@ -84,14 +83,23 @@ void CodeGenerator::GenerateImports(const Imports& imports) {
     }
 }
 
+CodeGenerator::DeclarationVisitor::DeclarationVisitor(CodeGenerator& gen) : gen_(gen) {
+}
+
+void CodeGenerator::DeclarationVisitor::operator()(const Constant& c) {
+    gen_.GenerateConstant(c);
+}
+
+void CodeGenerator::DeclarationVisitor::operator()(const Function& f) {
+    gen_.GenerateFunction(f);
+}
+
+void CodeGenerator::DeclarationVisitor::operator()(const Module& m) {
+    gen_.GenerateModule(m);
+}
+
 void CodeGenerator::GenerateDeclaration(const Declaration& decl) {
-    if (std::holds_alternative<Constant>(decl)) {
-        GenerateConstant(std::get<Constant>(decl));
-    } else if (std::holds_alternative<Function>(decl)) {
-        GenerateFunction(std::get<Function>(decl));
-    } else if (std::holds_alternative<Module>(decl)) {
-        GenerateModule(std::get<Module>(decl));
-    }
+    std::visit(DeclarationVisitor(*this), decl);
 }
 
 void CodeGenerator::GenerateConstant(const Constant& constant) {
@@ -118,21 +126,32 @@ void CodeGenerator::GenerateFunction(const Function& func) {
     }
 }
 
+CodeGenerator::ExpressionVisitor::ExpressionVisitor(CodeGenerator& gen, int parent_precedence, Operator parent_operator)
+    : gen_(gen), parent_precedence_(parent_precedence), parent_operator_(parent_operator) {
+}
+
+void CodeGenerator::ExpressionVisitor::operator()(const BinaryOperation& binop) {
+    gen_.GenerateBinaryOperation(binop, parent_precedence_, parent_operator_);
+}
+
+void CodeGenerator::ExpressionVisitor::operator()(const FunctionCall& fc) {
+    gen_.GenerateFunctionCall(fc);
+}
+
+void CodeGenerator::ExpressionVisitor::operator()(const Variable& v) {
+    gen_.GenerateVariable(v);
+}
+
+void CodeGenerator::ExpressionVisitor::operator()(const Number& n) {
+    gen_.GenerateNumber(n);
+}
+
+void CodeGenerator::ExpressionVisitor::operator()(const Float& f) {
+    gen_.GenerateFloat(f);
+}
+
 void CodeGenerator::GenerateExpression(const Expression& expr, int parent_precedence, Operator parent_operator) {
-    if (std::holds_alternative<BinaryOperation>(expr)) {
-        GenerateBinaryOperation(std::get<BinaryOperation>(expr), parent_precedence, parent_operator);
-    } else if (std::holds_alternative<FunctionCall>(expr)) {
-        GenerateFunctionCall(std::get<FunctionCall>(expr));
-    } else if (std::holds_alternative<Variable>(expr)) {
-        GenerateVariable(std::get<Variable>(expr));
-    } else if (std::holds_alternative<Number>(expr)) {
-        GenerateNumber(std::get<Number>(expr));
-    } else if (std::holds_alternative<Float>(expr)) {
-        GenerateFloat(std::get<Float>(expr));
-    } else {
-        std::cerr << "Token type to be outputted is not yet supported.\n";
-        exit(3);
-    }
+    std::visit(ExpressionVisitor(*this, parent_precedence, parent_operator), expr);
 }
 
 const std::unordered_map<Operator, std::string> kOperatorToRepr = {
