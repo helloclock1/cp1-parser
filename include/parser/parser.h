@@ -23,11 +23,17 @@ struct BinaryOperation;
 struct FunctionCall;
 struct Function;
 
-// TODO(helloclock): horrible implementation, fix asap then write docs
-struct Imports {
-    void AddImport(const std::string& module_name, const std::string& alias,
-                   std::set<std::string> functions);
+using Import =
+    std::pair<std::string, std::pair<std::string, std::set<std::string>>>;
 
+class Imports {
+public:
+    void AddImport(Import import);
+
+    const std::map<std::string, std::pair<std::string, std::set<std::string>>>&
+    GetImports() const;
+
+private:
     std::map<std::string, std::pair<std::string, std::set<std::string>>>
         modules_map_;
 };
@@ -163,7 +169,7 @@ public:
     /**
      * @brief Parses an import statement line and adds it to `module`.
      */
-    void ParseImport(Module& module);
+    Import ParseImport();
 
     /**
      * @brief Parses a let-declaration (be it constant or function).

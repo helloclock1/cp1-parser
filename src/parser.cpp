@@ -8,15 +8,37 @@ ParserError::ParserError(std::pair<size_t, size_t> coords,
                          std::to_string(coords.second - 1) + "] " + msg) {
 }
 
-void Imports::AddImport(const std::string& module_name,
-                        const std::string& alias = "",
-                        std::set<std::string> functions = {}) {
+void Imports::AddImport(Import import) {
+    auto [module_name, info] = import;
+    auto [alias, functions] = info;
     if (modules_map_.count(module_name) == 0) {
         modules_map_[module_name] = {alias, functions};
     } else {
-        modules_map_[module_name].second.insert(functions.begin(),
-                                                functions.end());
+        if (modules_map_[module_name].first != alias) {
+            throw std::runtime_error(
+                "Alias collision while importing: tried importing a module `" +
+                module_name + "` with alias `" + alias +
+                "` while same module " +
+                (modules_map_[module_name].first == module_name
+                     ? "without alias"
+                     : "with alias `" + modules_map_[module_name].first + "`") +
+                " has already been imported.");
+        }
+        if (functions.empty()) {
+            modules_map_.erase(modules_map_.find(module_name));
+            modules_map_[module_name].first = alias;
+        } else {
+            if (!modules_map_[module_name].second.empty()) {
+                modules_map_[module_name].second.insert(functions.begin(),
+                                                        functions.end());
+            }
+        }
     }
+}
+
+const std::map<std::string, std::pair<std::string, std::set<std::string>>>&
+Imports::GetImports() const {
+    return modules_map_;
 }
 
 Parser::Parser(Tokenizer& tokenizer) : tokenizer_(tokenizer) {
@@ -28,7 +50,7 @@ Module Parser::ParseModule() {
     while (true) {
         switch (CurrentTokenType()) {
             case TokenType::IMPORT:
-                ParseImport(module);
+                module.imports_.AddImport(ParseImport());
                 break;
             case TokenType::LET:
                 module.declarations_.push_back(ParseLet());
@@ -74,7 +96,7 @@ void Parser::ExpectType(TokenType type) {
     }
 }
 
-void Parser::ParseImport(Module& module) {
+Import Parser::ParseImport() {
     tokenizer_.ReadToken(TokenType::IDENTIFIER);
     Imports imports;
     std::string module_name = ParseName();
@@ -87,10 +109,10 @@ void Parser::ParseImport(Module& module) {
     if (CurrentTokenType() == TokenType::L_BRACKET) {
         functions = ParseImportFunctions();
         ExpectType(TokenType::R_BRACKET);
-        tokenizer_.ReadToken();
+        tokenizer_.ReadToken(TokenType::EOL);
     }
     tokenizer_.ReadToken();
-    module.imports_.AddImport(module_name, alias, functions);
+    return {module_name, {alias, functions}};
 }
 
 Declaration Parser::ParseLet() {

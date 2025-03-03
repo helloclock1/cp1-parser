@@ -41,7 +41,7 @@ void CodeGenerator::GenerateModule(const Module& module) {
         if (std::holds_alternative<Module>(decl)) {
             const Module& submod = std::get<Module>(decl);
             if (!submod.declarations_.empty() ||
-                !submod.imports_.modules_map_.empty()) {
+                !submod.imports_.GetImports().empty()) {
                 newline_after_decls = true;
                 break;
             }
@@ -66,7 +66,7 @@ void CodeGenerator::GenerateModule(const Module& module) {
 }
 
 void CodeGenerator::GenerateImports(const Imports& imports) {
-    for (auto const& [name, info] : imports.modules_map_) {
+    for (auto const& [name, info] : imports.GetImports()) {
         auto [alias, funcs] = info;
         out_ << "import " << name;
         if (name != alias) {
