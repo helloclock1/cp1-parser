@@ -58,15 +58,13 @@ Module Parser::ParseModule() {
             case TokenType::MODULE:
                 module.declarations_.push_back(ParseSubmodule());
                 break;
-            case TokenType::FILE_END:
-            case TokenType::DEDENT:
-                return module;
             case TokenType::EOL:
-                tokenizer_.ReadToken();
-                break;
             case TokenType::INDENT:
                 tokenizer_.ReadToken();
                 break;
+            case TokenType::FILE_END:
+            case TokenType::DEDENT:
+                return module;
             default:
                 throw ParserError(tokenizer_.GetCoords(),
                                   "Unexpected token encountered: `" +
@@ -172,8 +170,8 @@ Module Parser::ParseSubmodule() {
                           "started at line " +
                               std::to_string(start_line) + ".");
     }
-    tokenizer_.ReadToken();
     submodule.name_ = submodule_name;
+    tokenizer_.ReadToken();
     return submodule;
 }
 
@@ -259,42 +257,49 @@ Expression Parser::ParsePow(Operator parent_operator) {
 }
 
 Expression Parser::ParseAtom() {
-    if (CurrentTokenType() == TokenType::IDENTIFIER) {
-        std::string name = ParseName();
+    TokenType ctt = CurrentTokenType();
+    switch (ctt) {
+        case TokenType::IDENTIFIER: {
+            std::string name = ParseName();
 
-        if (CurrentTokenType() == TokenType::L_BRACKET) {
-            tokenizer_.ReadToken();
-            std::vector<Expression> args;
-            while (CurrentTokenType() != TokenType::R_BRACKET) {
-                args.push_back(ParseExpression());
-                if (CurrentTokenType() == TokenType::COMMA) {
-                    tokenizer_.ReadToken();
+            if (CurrentTokenType() == TokenType::L_BRACKET) {
+                tokenizer_.ReadToken();
+                std::vector<Expression> args;
+                while (CurrentTokenType() != TokenType::R_BRACKET) {
+                    args.push_back(ParseExpression());
+                    if (CurrentTokenType() == TokenType::COMMA) {
+                        tokenizer_.ReadToken();
+                    }
                 }
+                tokenizer_.ReadToken();
+                return FunctionCall{name, std::move(args)};
+            } else {
+                return Variable{name};
             }
-            tokenizer_.ReadToken();
-            return FunctionCall{name, std::move(args)};
-        } else {
-            return Variable{name};
         }
-    } else if (CurrentTokenType() == TokenType::INTEGER) {
-        int value = std::stoi(CurrentTokenLexeme());
-        tokenizer_.ReadToken();
-        return Number{value};
-    } else if (CurrentTokenType() == TokenType::FLOAT) {
-        float value = std::stof(CurrentTokenLexeme());
-        tokenizer_.ReadToken();
-        return Float{value};
-    } else if (CurrentTokenType() == TokenType::L_BRACKET) {
-        tokenizer_.ReadToken();
-        auto expr = ParseExpression();
-        ExpectType(TokenType::R_BRACKET);
-        tokenizer_.ReadToken();
-        return expr;
-    } else {
-        throw ParserError(tokenizer_.GetCoords(),
-                          "Unexpected token in expression encountered: got `" +
-                              CurrentTokenLexeme() +
-                              "`, expected an identifier, a number, a bracket "
-                              "enclosed expression.");
+        case TokenType::INTEGER: {
+            int value = std::stoi(CurrentTokenLexeme());
+            tokenizer_.ReadToken();
+            return Number{value};
+        }
+        case TokenType::FLOAT: {
+            float value = std::stof(CurrentTokenLexeme());
+            tokenizer_.ReadToken();
+            return Float{value};
+        }
+        case TokenType::L_BRACKET: {
+            tokenizer_.ReadToken();
+            auto expr = ParseExpression();
+            ExpectType(TokenType::R_BRACKET);
+            tokenizer_.ReadToken();
+            return expr;
+        }
+        default:
+            throw ParserError(
+                tokenizer_.GetCoords(),
+                "Unexpected token in expression encountered: got `" +
+                    CurrentTokenLexeme() +
+                    "`, expected an identifier, a number, a bracket "
+                    "enclosed expression.");
     }
 }
