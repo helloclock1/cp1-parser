@@ -139,6 +139,10 @@ CodeGenerator::ExpressionVisitor::ExpressionVisitor(CodeGenerator& gen,
       parent_operator_(parent_operator) {
 }
 
+void CodeGenerator::ExpressionVisitor::operator()(const UnaryOperation& unop) {
+    gen_.GenerateUnaryOperation(unop);
+}
+
 void CodeGenerator::ExpressionVisitor::operator()(
     const BinaryOperation& binop) {
     gen_.GenerateBinaryOperation(binop, parent_precedence_, parent_operator_);
@@ -167,6 +171,18 @@ void CodeGenerator::GenerateExpression(const Expression& expr,
                expr);
 }
 
+void CodeGenerator::GenerateUnaryOperation(const UnaryOperation& unop) {
+    out_ << "-";
+    bool place_brackets = std::holds_alternative<BinaryOperation>(*unop.expr_);
+    if (place_brackets) {
+        out_ << "(";
+    }
+    GenerateExpression(*unop.expr_);
+    if (place_brackets) {
+        out_ << ")";
+    }
+}
+
 void CodeGenerator::GenerateBinaryOperation(const BinaryOperation& op,
                                             int parent_precedence,
                                             Operator parent_operator) {
@@ -190,7 +206,13 @@ void CodeGenerator::GenerateBinaryOperation(const BinaryOperation& op,
     }
     GenerateExpression(*op.lhs_, lhs_precedence, op.op_);
     out_ << " " << kOperatorRepr.at(op.op_) << " ";
-    GenerateExpression(*op.rhs_, rhs_precedence, op.op_);
+    if (std::holds_alternative<UnaryOperation>(*op.rhs_)) {
+        out_ << "(";
+        GenerateExpression(*op.rhs_, rhs_precedence, op.op_);
+        out_ << ")";
+    } else {
+        GenerateExpression(*op.rhs_, rhs_precedence, op.op_);
+    }
     if (place_brackets) {
         out_ << ")";
     }

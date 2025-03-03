@@ -214,8 +214,18 @@ Expression Parser::ParseMulDiv(Operator parent_operator) {
     return lhs;
 }
 
+Expression Parser::ParseUnary(Operator parent_operator) {
+    if (CurrentTokenType() == TokenType::SUB) {
+        tokenizer_.ReadToken();
+        Expression expr = ParseUnary(parent_operator);
+        return UnaryOperation{Operator::SUB,
+                              std::make_unique<Expression>(std::move(expr))};
+    }
+    return ParseAtom();
+}
+
 Expression Parser::ParsePow(Operator parent_operator) {
-    auto lhs = ParseAtom();
+    auto lhs = ParseUnary(parent_operator);
     while (CurrentTokenType() == TokenType::POW) {
         tokenizer_.ReadToken();
         auto rhs = ParseAtom();

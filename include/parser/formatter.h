@@ -78,6 +78,7 @@ private:
     struct ExpressionVisitor {
         explicit ExpressionVisitor(CodeGenerator& gen, int parent_precedence,
                                    Operator parent_operator);
+        void operator()(const UnaryOperation& unop);
         void operator()(const BinaryOperation& binop);
         void operator()(const FunctionCall& fc);
         void operator()(const Variable& v);
@@ -96,6 +97,7 @@ private:
      */
     void GenerateExpression(const Expression& expr, int parent_precedence = 0,
                             Operator parent_operator = Operator::ROOT);
+    void GenerateUnaryOperation(const UnaryOperation& unop);
     void GenerateBinaryOperation(const BinaryOperation& op,
                                  int parent_precedence = 0,
                                  Operator parent_operator = Operator::ROOT);

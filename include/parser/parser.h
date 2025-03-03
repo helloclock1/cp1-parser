@@ -18,6 +18,7 @@ public:
 
 // Forward declarations
 struct Module;
+struct UnaryOperation;
 struct BinaryOperation;
 struct FunctionCall;
 struct Function;
@@ -59,14 +60,24 @@ struct Float {
  * @brief Alias for all the parts of an expression (sequence of atoms and
  * operators).
  */
-using Expression =
-    std::variant<BinaryOperation, FunctionCall, Variable, Number, Float>;
+using Expression = std::variant<UnaryOperation, BinaryOperation, FunctionCall,
+                                Variable, Number, Float>;
 
 /**
  * @enum class Operator
  * @brief Stores all possible mathematical operators.
  */
 enum class Operator { ADD, SUB, MUL, DIV, POW, ROOT };
+
+/**
+ * @struct UnaryOperation
+ * @brief Represents unary operation (currently --- unary minus, to be
+ * specific); stores operation and a pointer to its operand.
+ */
+struct UnaryOperation {
+    Operator op_;
+    std::unique_ptr<Expression> expr_;
+};
 
 /**
  * @struct BinaryOperation
@@ -200,9 +211,6 @@ private:
      */
     std::set<std::string> ParseImportFunctions();
 
-    /*
-     * @brief Parses an expression.
-     */
     Expression ParseExpression();
 
     // Next several functions parse binary expression of the given priority.
@@ -210,6 +218,7 @@ private:
     Expression ParseAddSub(Operator parent_operator);
     Expression ParseMulDiv(Operator parent_operator);
     Expression ParsePow(Operator parent_operator);
+    Expression ParseUnary(Operator parent_operator);
     Expression ParseAtom();
 
     Tokenizer& tokenizer_;
