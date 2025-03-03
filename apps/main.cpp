@@ -11,17 +11,21 @@
 void usage() {
     std::cout << "Usage: ./beautify read_from [write_to] [OPTIONS]\n";
     std::cout << "\n";
-    std::cout << "Description: this program accepts a file as input and outputs the same file but formatted either to "
+    std::cout << "Description: this program accepts a file as input and "
+                 "outputs the same file but formatted either to "
                  "another file or stdout.\n";
     std::cout << "\n";
     std::cout << "Options:\n";
     std::cout << "  --help                         Shows this message\n";
-    std::cout << "  --spaces-per-tab -t            Specifies amount of spaces a tab should be expanded as "
+    std::cout << "  --spaces-per-tab -t            Specifies amount of spaces "
+                 "a tab should be expanded as "
                  "(defaults to 8)";
 }
 
-// Returns an object of structure {{input filename, output filename (stdout if empty)}, spaces per tab}
-std::pair<std::pair<std::string, std::string>, size_t> ParseArgs(int argc, char* argv[]) {
+// Returns an object of structure {{input filename, output filename (stdout if
+// empty)}, spaces per tab}
+std::pair<std::pair<std::string, std::string>, size_t> ParseArgs(int argc,
+                                                                 char* argv[]) {
     std::string in_filename;
     std::string out_filename;
     size_t spaces = 8;
@@ -35,7 +39,8 @@ std::pair<std::pair<std::string, std::string>, size_t> ParseArgs(int argc, char*
                 try {
                     spaces = std::stoull(argv[i + 1]);
                 } catch (const std::invalid_argument&) {
-                    std::cerr << "Invalid value for spaces per tab argument: " << argv[i + 1] << ".\n";
+                    std::cerr << "Invalid value for spaces per tab argument: "
+                              << argv[i + 1] << ".\n";
                     exit(1);
                 }
                 ++i;
