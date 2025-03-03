@@ -77,10 +77,10 @@ int main(int argc, char* argv[]) {
     try {
         file = parser.ParseModule();
     } catch (const TokenizerError& e) {
-        std::cerr << "TokenizerError: " << e.what();
+        std::cerr << "TokenizerError: " << e.what() << std::endl;
         exit(2);
     } catch (const ParserError& e) {
-        std::cerr << "ParserError: " << e.what();
+        std::cerr << "ParserError: " << e.what() << std::endl;
         exit(3);
     } catch (const std::exception& e) {
         std::cerr << "Unknown error encountered: " << e.what() << std::endl;

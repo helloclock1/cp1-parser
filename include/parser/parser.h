@@ -13,7 +13,7 @@
 
 class ParserError : public std::runtime_error {
 public:
-    ParserError(const std::string& msg);
+    ParserError(std::pair<size_t, size_t> coords, const std::string& msg);
 };
 
 // Forward declarations

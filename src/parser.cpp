@@ -1,7 +1,8 @@
 #include <parser/parser.h>
 #include <parser/tokenizer.h>
 
-ParserError::ParserError(const std::string& msg) : std::runtime_error(msg) {
+ParserError::ParserError(std::pair<size_t, size_t> coords, const std::string& msg)
+    : std::runtime_error("[" + std::to_string(coords.first) + ":" + std::to_string(coords.second - 1) + "] " + msg) {
 }
 
 const std::unordered_map<Operator, std::string> kOperatorRepr = {
@@ -43,7 +44,8 @@ Module Parser::ParseModule() {
                 tokenizer_.ReadToken();
                 break;
             default:
-                throw ParserError("Unexpected token encountered.\n");
+                throw ParserError(tokenizer_.GetCoords(),
+                                  "Unexpected token encountered: `" + CurrentTokenLexeme() + "`.");
         }
     }
 }
@@ -60,9 +62,34 @@ std::string Parser::CurrentTokenLexeme() const {
     return CurrentToken().GetLexeme();
 }
 
+// TODO(helloclock): move this and other maps to separate file
+std::unordered_map<TokenType, std::string> kTokenNames = {{TokenType::IMPORT, "import"},
+                                                          {TokenType::AS, "as"},
+                                                          {TokenType::MODULE, "module"},
+                                                          {TokenType::LET, "let"},
+                                                          {TokenType::WHERE, "where"},
+                                                          {TokenType::DOT, "dot"},
+                                                          {TokenType::COMMA, "comma"},
+                                                          {TokenType::L_BRACKET, "opening bracket"},
+                                                          {TokenType::R_BRACKET, "closing bracket"},
+                                                          {TokenType::ASSIGN, "assignment operator"},
+                                                          {TokenType::INDENT, "indent"},
+                                                          {TokenType::DEDENT, "dedent"},
+                                                          {TokenType::EOL, "end of line"},
+                                                          {TokenType::FILE_END, "end of file"},
+                                                          {TokenType::ADD, "addition"},
+                                                          {TokenType::SUB, "subtraction"},
+                                                          {TokenType::MUL, "multiplication"},
+                                                          {TokenType::DIV, "division"},
+                                                          {TokenType::POW, "power"},
+                                                          {TokenType::IDENTIFIER, "identifier"},
+                                                          {TokenType::NUMBER, "integer"},
+                                                          {TokenType::FLOAT, "float"}};
+
 void Parser::ExpectType(TokenType type) {
     if (CurrentToken().GetType() != type) {
-        throw ParserError("Unexpected token encountered.\n");
+        throw ParserError(tokenizer_.GetCoords(), "Unexpected token encountered: expected " + kTokenNames[type] +
+                                                      ", got " + CurrentTokenLexeme() + ".");
     }
 }
 
@@ -117,6 +144,7 @@ Declaration Parser::ParseLet() {
 }
 
 Module Parser::ParseSubmodule() {
+    auto [start_line, start_col] = tokenizer_.GetCoords();
     tokenizer_.ReadToken(TokenType::IDENTIFIER);
     std::string submodule_name = CurrentTokenLexeme();
     tokenizer_.ReadToken(TokenType::WHERE);
@@ -125,12 +153,15 @@ Module Parser::ParseSubmodule() {
         tokenizer_.ReadToken();
     }
     if (CurrentTokenType() != TokenType::INDENT) {
-        throw ParserError("Expected an indent after substructure declaration.\n");
+        throw ParserError(tokenizer_.GetCoords(),
+                          "Expected an indent after substructure declaration that started at line " +
+                              std::to_string(start_line) + ".");
     }
     tokenizer_.ReadToken();
     Module submodule = ParseModule();
     if (CurrentTokenType() != TokenType::DEDENT && CurrentTokenType() != TokenType::FILE_END) {
-        throw ParserError("Expected a dedent after a substructure body.\n");
+        throw ParserError(tokenizer_.GetCoords(), "Expected a dedent after a substructure body that started at line " +
+                                                      std::to_string(start_line) + ".");
     }
     tokenizer_.ReadToken();
     submodule.name_ = submodule_name;
@@ -237,6 +268,8 @@ Expression Parser::ParseAtom() {
         tokenizer_.ReadToken();
         return expr;
     } else {
-        throw ParserError("Unexpected token in expression encountered.\n");
+        throw ParserError(tokenizer_.GetCoords(),
+                          "Unexpected token in expression encountered: got `" + CurrentTokenLexeme() +
+                              "`, expected an identifier, a number, a bracket enclosed expression.");
     }
 }

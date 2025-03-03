@@ -12,7 +12,7 @@
 
 class TokenizerError : public std::runtime_error {
 public:
-    explicit TokenizerError(const std::string &msg);
+    explicit TokenizerError(std::pair<size_t, size_t> coords, const std::string &msg);
 
 private:
     char *msg_;
@@ -126,7 +126,16 @@ public:
      */
     Token GetToken() const;
 
+    /**
+     * @brief Function that returns current line and column.
+     */
+    std::pair<size_t, size_t> GetCoords() const;
+
 private:
+    /**
+     * @brief Helper function for reading a character from stream, keeping track of line and column.
+     */
+    char StreamRead();
     /**
      * @brief Helper function for reading a token of types `TokenType::NUMBER` and `TokenType::FLOAT`.
      */
@@ -148,4 +157,7 @@ private:
     std::stack<size_t> indents_;
     size_t current_indent_spaces_ = 0;
     size_t indentation_level_ = 0;
+
+    size_t line_ = 1;
+    size_t column_ = 1;
 };
