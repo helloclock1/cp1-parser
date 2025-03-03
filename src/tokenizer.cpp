@@ -116,51 +116,52 @@ void Tokenizer::ReadToken(TokenType expected) {
         }
     }
     std::string token_string;
-    if (std::isdigit(in_->peek())) {
+    char next = in_->peek();
+    if (std::isdigit(next)) {
         ReadNumber();
-    } else if (std::isalpha(in_->peek()) || in_->peek() == '_') {
+    } else if (std::isalpha(next) || next == '_') {
         ReadWord();
-    } else if (in_->peek() == '.') {
+    } else if (next == '.') {
         StreamRead();
         current_token_ = Token(TokenType::DOT);
-    } else if (in_->peek() == ',') {
+    } else if (next == ',') {
         StreamRead();
         current_token_ = Token(TokenType::COMMA);
-    } else if (in_->peek() == ':') {
+    } else if (next == ':') {
         StreamRead();
         if (StreamRead() == '=') {
             current_token_ = Token(TokenType::ASSIGN);
         } else {
             throw TokenizerError(GetCoords(), "Unknown symbol encountered while tokenizing. Maybe you meant `:=`?");
         }
-    } else if (in_->peek() == '\n') {
+    } else if (next == '\n') {
         StreamRead();
         current_token_ = Token(TokenType::EOL);
-    } else if (in_->peek() == '(') {
+    } else if (next == '(') {
         StreamRead();
         current_token_ = Token(TokenType::L_BRACKET);
-    } else if (in_->peek() == ')') {
+    } else if (next == ')') {
         StreamRead();
         current_token_ = Token(TokenType::R_BRACKET);
-    } else if (in_->peek() == '+') {
+    } else if (next == '+') {
         StreamRead();
         current_token_ = Token(TokenType::ADD);
-    } else if (in_->peek() == '-') {
+    } else if (next == '-') {
         StreamRead();
         current_token_ = Token(TokenType::SUB);
-    } else if (in_->peek() == '/') {
+    } else if (next == '/') {
         StreamRead();
         current_token_ = Token(TokenType::DIV);
-    } else if (in_->peek() == '*') {
+    } else if (next == '*') {
         StreamRead();
         current_token_ = Token(TokenType::MUL);
-    } else if (in_->peek() == '^') {
+    } else if (next == '^') {
         StreamRead();
         current_token_ = Token(TokenType::POW);
-    } else if (in_->peek() == -1) {
+    } else if (next == -1) {
     } else {
         throw TokenizerError(GetCoords(), "Unknown symbol encountered while tokenizing: `" +
-                                              std::string(1, static_cast<char>(in_->peek())) + "`.");
+                                              std::string(1, static_cast<char>(next)) + "`.");
     }
     if (expected != TokenType::NONE && current_token_.GetType() != expected) {
         throw TokenizerError(GetCoords(), "Unexpected token encountered: expected " + kTokenName[expected] + ", got " +

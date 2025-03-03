@@ -6,6 +6,7 @@ CodeGenerator::CodeGenerator(std::ostream& out) : out_(out) {
 
 void CodeGenerator::Generate(const Module& module) {
     GenerateModule(module);
+    out_ << "\n";
 }
 
 void CodeGenerator::Indent() {
