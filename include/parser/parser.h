@@ -24,9 +24,11 @@ struct Function;
 
 // TODO(helloclock): horrible implementation, fix asap then write docs
 struct Imports {
-    void AddImport(const std::string& module_name, const std::string& alias, std::set<std::string> functions);
+    void AddImport(const std::string& module_name, const std::string& alias,
+                   std::set<std::string> functions);
 
-    std::map<std::string, std::pair<std::string, std::set<std::string>>> modules_map_;
+    std::map<std::string, std::pair<std::string, std::set<std::string>>>
+        modules_map_;
 };
 
 /**
@@ -54,9 +56,11 @@ struct Float {
 };
 
 /**
- * @brief Alias for all the parts of an expression (sequence of atoms and operators).
+ * @brief Alias for all the parts of an expression (sequence of atoms and
+ * operators).
  */
-using Expression = std::variant<BinaryOperation, FunctionCall, Variable, Number, Float>;
+using Expression =
+    std::variant<BinaryOperation, FunctionCall, Variable, Number, Float>;
 
 /**
  * @enum class Operator
@@ -66,8 +70,9 @@ enum class Operator { ADD, SUB, MUL, DIV, POW, ROOT };
 
 /**
  * @struct BinaryOperation
- * @brief Stores LHS, operator and RHS of the expression. For the sake of formatting (bracket placement to be specific)
- * also contains context for parent binary operation.
+ * @brief Stores LHS, operator and RHS of the expression. For the sake of
+ * formatting (bracket placement to be specific) also contains context for
+ * parent binary operation.
  */
 struct BinaryOperation {
     std::unique_ptr<Expression> lhs_;
@@ -96,8 +101,8 @@ struct Constant {  // declarations like `let var_name := ...`
 
 /**
  * @struct Function
- * @brief Stores information of declarations like `let func_name(arg1, ..., argn) := expression` (possibly with a
- * `where` block).
+ * @brief Stores information of declarations like `let func_name(arg1, ...,
+ * argn) := expression` (possibly with a `where` block).
  */
 struct Function {  // declarations like `let var_name := ... where\n ...`
     std::string name_;
@@ -113,8 +118,9 @@ using Declaration = std::variant<Constant, Function, Module>;
 
 /**
  * @struct Module
- * @brief Represents a module of a language, which is a name (unless the module is source file), a (possibly empty) list
- * of imports, a (possibly empty) list of declarations.
+ * @brief Represents a module of a language, which is a name (unless the module
+ * is source file), a (possibly empty) list of imports, a (possibly empty) list
+ * of declarations.
  */
 struct Module {
     std::string name_ = "";
@@ -126,7 +132,8 @@ struct Module {
  * @class Parser
  * @brief Represents a parser of a source file, depends on `Tokenizer` class.
  *
- * The class parses the source file in a recursive manner with the help of `Tokenizer` class.
+ * The class parses the source file in a recursive manner with the help of
+ * `Tokenizer` class.
  */
 class Parser {
 public:
@@ -136,8 +143,9 @@ public:
     Parser(Tokenizer& tokenizer);
 
     /**
-     * @brief Parses a module entity. As the provided file is technically a module too, this function gets called to
-     * start parsing of the entire file.
+     * @brief Parses a module entity. As the provided file is technically a
+     * module too, this function gets called to start parsing of the entire
+     * file.
      */
     Module ParseModule();
 
@@ -152,7 +160,8 @@ public:
     Declaration ParseLet();
 
     /**
-     * @brief Parses a submodule by parsing its header and then recursively calling `ParseModule`.
+     * @brief Parses a submodule by parsing its header and then recursively
+     * calling `ParseModule`.
      */
     Module ParseSubmodule();
 
@@ -173,14 +182,16 @@ private:
     std::string CurrentTokenLexeme() const;
 
     /**
-     * @brief Helper function that checks whether type of the current token equals to `type`.
+     * @brief Helper function that checks whether type of the current token
+     * equals to `type`.
      *
      * @throws Throws an error if `CurrentTokenType()` and `type` don't match.
      */
     void ExpectType(TokenType type);
 
     /**
-     * @brief Parses a name (perhaps "indented", like `module.submodule.entity`).
+     * @brief Parses a name (perhaps "indented", like
+     * `module.submodule.entity`).
      */
     const std::string ParseName();
 

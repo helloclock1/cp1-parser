@@ -1,3 +1,4 @@
+#include <parser/constants.h>
 #include <parser/formatter.h>
 #include <parser/parser.h>
 
@@ -39,7 +40,8 @@ void CodeGenerator::GenerateModule(const Module& module) {
     for (const auto& decl : module.declarations_) {
         if (std::holds_alternative<Module>(decl)) {
             const Module& submod = std::get<Module>(decl);
-            if (!submod.declarations_.empty() || !submod.imports_.modules_map_.empty()) {
+            if (!submod.declarations_.empty() ||
+                !submod.imports_.modules_map_.empty()) {
                 newline_after_decls = true;
                 break;
             }
@@ -84,7 +86,8 @@ void CodeGenerator::GenerateImports(const Imports& imports) {
     }
 }
 
-CodeGenerator::DeclarationVisitor::DeclarationVisitor(CodeGenerator& gen) : gen_(gen) {
+CodeGenerator::DeclarationVisitor::DeclarationVisitor(CodeGenerator& gen)
+    : gen_(gen) {
 }
 
 void CodeGenerator::DeclarationVisitor::operator()(const Constant& c) {
@@ -112,7 +115,8 @@ void CodeGenerator::GenerateFunction(const Function& func) {
     out_ << "let " << func.name_;
     if (!func.parameters_.empty()) {
         out_ << "(" << func.parameters_[0];
-        for (auto it = func.parameters_.begin() + 1; it != func.parameters_.end(); ++it) {
+        for (auto it = func.parameters_.begin() + 1;
+             it != func.parameters_.end(); ++it) {
             out_ << ", " << *it;
         }
         out_ << ")";
@@ -127,11 +131,16 @@ void CodeGenerator::GenerateFunction(const Function& func) {
     }
 }
 
-CodeGenerator::ExpressionVisitor::ExpressionVisitor(CodeGenerator& gen, int parent_precedence, Operator parent_operator)
-    : gen_(gen), parent_precedence_(parent_precedence), parent_operator_(parent_operator) {
+CodeGenerator::ExpressionVisitor::ExpressionVisitor(CodeGenerator& gen,
+                                                    int parent_precedence,
+                                                    Operator parent_operator)
+    : gen_(gen),
+      parent_precedence_(parent_precedence),
+      parent_operator_(parent_operator) {
 }
 
-void CodeGenerator::ExpressionVisitor::operator()(const BinaryOperation& binop) {
+void CodeGenerator::ExpressionVisitor::operator()(
+    const BinaryOperation& binop) {
     gen_.GenerateBinaryOperation(binop, parent_precedence_, parent_operator_);
 }
 
@@ -151,17 +160,15 @@ void CodeGenerator::ExpressionVisitor::operator()(const Float& f) {
     gen_.GenerateFloat(f);
 }
 
-void CodeGenerator::GenerateExpression(const Expression& expr, int parent_precedence, Operator parent_operator) {
-    std::visit(ExpressionVisitor(*this, parent_precedence, parent_operator), expr);
+void CodeGenerator::GenerateExpression(const Expression& expr,
+                                       int parent_precedence,
+                                       Operator parent_operator) {
+    std::visit(ExpressionVisitor(*this, parent_precedence, parent_operator),
+               expr);
 }
 
-const std::unordered_map<Operator, std::string> kOperatorToRepr = {
-    {Operator::ADD, "+"}, {Operator::SUB, "-"}, {Operator::MUL, "*"}, {Operator::DIV, "/"}, {Operator::POW, "^"}};
-
-const std::unordered_map<Operator, int> kOperatorPrecedence = {
-    {Operator::ADD, 1}, {Operator::SUB, 1}, {Operator::MUL, 2}, {Operator::DIV, 2}, {Operator::POW, 3}};
-
-void CodeGenerator::GenerateBinaryOperation(const BinaryOperation& op, int parent_precedence,
+void CodeGenerator::GenerateBinaryOperation(const BinaryOperation& op,
+                                            int parent_precedence,
                                             Operator parent_operator) {
     int current_precedence = kOperatorPrecedence.at(op.op_);
     bool place_brackets = false;
@@ -174,14 +181,15 @@ void CodeGenerator::GenerateBinaryOperation(const BinaryOperation& op, int paren
     if (place_brackets) {
         out_ << "(";
     }
-    int lhs_precedence = current_precedence, rhs_precedence = current_precedence;
+    int lhs_precedence = current_precedence,
+        rhs_precedence = current_precedence;
     if (op.op_ == Operator::POW) {
         ++lhs_precedence;
     } else {
         ++rhs_precedence;
     }
     GenerateExpression(*op.lhs_, lhs_precedence, op.op_);
-    out_ << " " << kOperatorToRepr.at(op.op_) << " ";
+    out_ << " " << kOperatorRepr.at(op.op_) << " ";
     GenerateExpression(*op.rhs_, rhs_precedence, op.op_);
     if (place_brackets) {
         out_ << ")";
