@@ -48,7 +48,7 @@ std::unordered_map<TokenType, std::string> kTokenName = {{TokenType::IMPORT, "im
                                                          {TokenType::DIV, "division"},
                                                          {TokenType::POW, "power"},
                                                          {TokenType::IDENTIFIER, "identifier"},
-                                                         {TokenType::NUMBER, "integer"},
+                                                         {TokenType::INTEGER, "integer"},
                                                          {TokenType::FLOAT, "float"}};
 
 void Tokenizer::ReadToken(TokenType expected) {
@@ -122,41 +122,41 @@ void Tokenizer::ReadToken(TokenType expected) {
         ReadWord();
     } else if (in_->peek() == '.') {
         StreamRead();
-        current_token_ = Token(TokenType::DOT, ".");
+        current_token_ = Token(TokenType::DOT);
     } else if (in_->peek() == ',') {
         StreamRead();
-        current_token_ = Token(TokenType::COMMA, ",");
+        current_token_ = Token(TokenType::COMMA);
     } else if (in_->peek() == ':') {
         StreamRead();
         if (StreamRead() == '=') {
-            current_token_ = Token(TokenType::ASSIGN, ":=");
+            current_token_ = Token(TokenType::ASSIGN);
         } else {
             throw TokenizerError(GetCoords(), "Unknown symbol encountered while tokenizing. Maybe you meant `:=`?");
         }
     } else if (in_->peek() == '\n') {
         StreamRead();
-        current_token_ = Token(TokenType::EOL, "\\n");
+        current_token_ = Token(TokenType::EOL);
     } else if (in_->peek() == '(') {
         StreamRead();
-        current_token_ = Token(TokenType::L_BRACKET, "(");
+        current_token_ = Token(TokenType::L_BRACKET);
     } else if (in_->peek() == ')') {
         StreamRead();
-        current_token_ = Token(TokenType::R_BRACKET, ")");
+        current_token_ = Token(TokenType::R_BRACKET);
     } else if (in_->peek() == '+') {
         StreamRead();
-        current_token_ = Token(TokenType::ADD, "+");
+        current_token_ = Token(TokenType::ADD);
     } else if (in_->peek() == '-') {
         StreamRead();
-        current_token_ = Token(TokenType::SUB, "-");
+        current_token_ = Token(TokenType::SUB);
     } else if (in_->peek() == '/') {
         StreamRead();
-        current_token_ = Token(TokenType::DIV, "/");
+        current_token_ = Token(TokenType::DIV);
     } else if (in_->peek() == '*') {
         StreamRead();
-        current_token_ = Token(TokenType::MUL, "*");
+        current_token_ = Token(TokenType::MUL);
     } else if (in_->peek() == '^') {
         StreamRead();
-        current_token_ = Token(TokenType::POW, "^");
+        current_token_ = Token(TokenType::POW);
     } else if (in_->peek() == -1) {
     } else {
         throw TokenizerError(GetCoords(), "Unknown symbol encountered while tokenizing: `" +
@@ -195,11 +195,11 @@ char Tokenizer::StreamRead() {
     return result;
 }
 
-std::unordered_map<std::string, Token> kStringToToken = {{"import", Token(TokenType::IMPORT, "import")},
-                                                         {"let", Token(TokenType::LET, "let")},
-                                                         {"as", Token(TokenType::AS, "as")},
-                                                         {"where", Token(TokenType::WHERE, "where")},
-                                                         {"module", Token(TokenType::MODULE, "module")}};
+std::unordered_map<std::string, Token> kStringToToken = {{"import", Token(TokenType::IMPORT)},
+                                                         {"let", Token(TokenType::LET)},
+                                                         {"as", Token(TokenType::AS)},
+                                                         {"where", Token(TokenType::WHERE)},
+                                                         {"module", Token(TokenType::MODULE)}};
 
 void Tokenizer::ReadNumber() {
     std::string token_string;
@@ -218,7 +218,7 @@ void Tokenizer::ReadNumber() {
         throw TokenizerError(GetCoords(), "Encountered a token starting with a number that is not a number itself: `" +
                                               token_string + "` and on.");
     }
-    current_token_ = is_float ? Token(TokenType::FLOAT, token_string) : Token(TokenType::NUMBER, token_string);
+    current_token_ = is_float ? Token(TokenType::FLOAT, token_string) : Token(TokenType::INTEGER, token_string);
 }
 
 void Tokenizer::ReadWord() {

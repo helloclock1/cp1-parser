@@ -54,7 +54,7 @@ enum class TokenType {
     // Entities
     IDENTIFIER,
     // Literals
-    NUMBER,
+    INTEGER,
     FLOAT,
 
     NONE  ///< Has no usage besides `Tokenizer::ReadToken` function

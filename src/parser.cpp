@@ -83,7 +83,7 @@ std::unordered_map<TokenType, std::string> kTokenNames = {{TokenType::IMPORT, "i
                                                           {TokenType::DIV, "division"},
                                                           {TokenType::POW, "power"},
                                                           {TokenType::IDENTIFIER, "identifier"},
-                                                          {TokenType::NUMBER, "integer"},
+                                                          {TokenType::INTEGER, "integer"},
                                                           {TokenType::FLOAT, "float"}};
 
 void Parser::ExpectType(TokenType type) {
@@ -253,7 +253,7 @@ Expression Parser::ParseAtom() {
         } else {
             return Variable{name};
         }
-    } else if (CurrentTokenType() == TokenType::NUMBER) {
+    } else if (CurrentTokenType() == TokenType::INTEGER) {
         int value = std::stoi(CurrentTokenLexeme());
         tokenizer_.ReadToken();
         return Number{value};
