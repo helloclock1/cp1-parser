@@ -1,5 +1,8 @@
 #include <parser/tokenizer.h>
 
+TokenizerError::TokenizerError(const std::string &msg) : std::runtime_error(msg) {
+}
+
 Token::Token() : type_(TokenType::EOL), lexeme_("\\n") {
 }
 
@@ -17,9 +20,8 @@ const std::string &Token::GetLexeme() const {
     if (lexeme_.has_value()) {
         return lexeme_.value();
     }
-    std::cerr << "Trying to access a lexeme of a non-identifier-like token. This is most likely an "
-                 "error on program's side.\n";
-    exit(1);
+    throw std::logic_error(
+        "Trying to access a lexeme of a non-identifier-like token. This is most likely an error on program's side.\n");
 }
 
 Tokenizer::Tokenizer(std::istream *ptr, size_t spaces_per_tab) : in_(ptr), spaces_per_tab_(spaces_per_tab) {
@@ -61,8 +63,7 @@ void Tokenizer::ReadToken(TokenType expected) {
                 current_token_ = Token(TokenType::INDENT);
                 return;
             } else {
-                std::cerr << "Encountered an indent greater than the indent of the block.\n";
-                exit(1);
+                throw TokenizerError("Encountered an indent greater than the indent of the block.\n");
             }
         } else if (new_indent < current_indent_spaces_) {
             if (indentation_level_ != 0) {
@@ -73,16 +74,14 @@ void Tokenizer::ReadToken(TokenType expected) {
                     ++dedents_;
                 }
                 if (new_indent != current_indent_spaces_) {
-                    std::cerr << "Unexpected indentation encountered\n";
-                    exit(1);
+                    throw TokenizerError("Unexpected indentation encountered.\n");
                 }
                 --dedents_;
                 --indentation_level_;
                 current_token_ = Token(TokenType::DEDENT);
                 return;
             } else {
-                std::cerr << "Encountered more dedents than there were indents prior.\n";
-                exit(1);
+                throw TokenizerError("Encountered more dedents than there were indents prior.\n");
             }
         }
         substruct_started_ = false;
@@ -108,8 +107,7 @@ void Tokenizer::ReadToken(TokenType expected) {
         if (in_->get() == '=') {
             current_token_ = Token(TokenType::ASSIGN, ":=");
         } else {
-            std::cerr << "Unknown symbol encountered while tokenizing.\n";
-            exit(1);
+            throw TokenizerError("Unknown symbol encountered while tokenizing.\n");
         }
     } else if (in_->peek() == '\n') {
         in_->get();
@@ -137,12 +135,10 @@ void Tokenizer::ReadToken(TokenType expected) {
         current_token_ = Token(TokenType::POW, "^");
     } else if (in_->peek() == -1) {
     } else {
-        std::cerr << "Unknown symbol encountered while tokenizing.\n";
-        exit(1);
+        throw TokenizerError("Unknown symbol encountered while tokenizing.\n");
     }
     if (expected != TokenType::NONE && current_token_.GetType() != expected) {
-        std::cerr << "Unexpected token encountered.\n";
-        exit(1);
+        throw TokenizerError("Unexpected token encountered.\n");
     }
 }
 
@@ -165,14 +161,12 @@ std::unordered_map<std::string, Token> kStringToToken = {{"import", Token(TokenT
                                                          {"module", Token(TokenType::MODULE, "module")}};
 
 void Tokenizer::ReadNumber() {
-    // TODO(helloclock): add float support
     std::string token_string;
     while (std::isdigit(in_->peek())) {
         token_string += in_->get();
     }
     bool is_float = false;
     if (in_->peek() == '.') {
-        std::cout << "processing float\n";
         is_float = true;
         token_string += in_->get();
         while (std::isdigit(in_->peek())) {
@@ -180,8 +174,7 @@ void Tokenizer::ReadNumber() {
         }
     }
     if (std::isalpha(in_->peek())) {
-        std::cerr << "Encountered a token starting with a number that is not a number itself.\n";
-        exit(1);
+        throw TokenizerError("Encountered a token starting with a number that is not a number itself.\n");
     }
     current_token_ = is_float ? Token(TokenType::FLOAT, token_string) : Token(TokenType::NUMBER, token_string);
 }

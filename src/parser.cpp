@@ -1,6 +1,9 @@
 #include <parser/parser.h>
 #include <parser/tokenizer.h>
 
+ParserError::ParserError(const std::string& msg) : std::runtime_error(msg) {
+}
+
 const std::unordered_map<Operator, std::string> kOperatorRepr = {
     {Operator::ADD, "+"}, {Operator::SUB, "-"}, {Operator::MUL, "*"}, {Operator::DIV, "/"}, {Operator::POW, "^"}};
 
@@ -40,8 +43,7 @@ Module Parser::ParseModule() {
                 tokenizer_.ReadToken();
                 break;
             default:
-                std::cerr << "Unexpected token encountered.\n";
-                exit(2);
+                throw ParserError("Unexpected token encountered.\n");
         }
     }
 }
@@ -60,8 +62,7 @@ std::string Parser::CurrentTokenLexeme() const {
 
 void Parser::ExpectType(TokenType type) {
     if (CurrentToken().GetType() != type) {
-        std::cerr << "Unexpected token encountered.\n";
-        exit(2);
+        throw ParserError("Unexpected token encountered.\n");
     }
 }
 
@@ -124,14 +125,12 @@ Module Parser::ParseSubmodule() {
         tokenizer_.ReadToken();
     }
     if (CurrentTokenType() != TokenType::INDENT) {
-        std::cerr << "Expected an indent after submodule declaration.\n";
-        exit(2);
+        throw ParserError("Expected an indent after substructure declaration.\n");
     }
     tokenizer_.ReadToken();
     Module submodule = ParseModule();
     if (CurrentTokenType() != TokenType::DEDENT && CurrentTokenType() != TokenType::FILE_END) {
-        std::cerr << "Expected a dedent after a substructure body.\n";
-        exit(2);
+        throw ParserError("Expected a dedent after a substructure body.\n");
     }
     tokenizer_.ReadToken();
     submodule.name_ = submodule_name;
@@ -238,7 +237,6 @@ Expression Parser::ParseAtom() {
         tokenizer_.ReadToken();
         return expr;
     } else {
-        std::cerr << "Unexpected token in expression encountered.\n";
-        exit(2);
+        throw ParserError("Unexpected token in expression encountered.\n");
     }
 }

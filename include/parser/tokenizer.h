@@ -5,9 +5,18 @@
 #include <iostream>
 #include <optional>
 #include <stack>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <variant>
+
+class TokenizerError : public std::runtime_error {
+public:
+    explicit TokenizerError(const std::string &msg);
+
+private:
+    char *msg_;
+};
 
 /**
  * @enum class TokenType
@@ -81,8 +90,6 @@ public:
 
     /**
      * @brief Gets token's lexeme if it's applicable.
-     *
-     * Gets token's lexeme if it's applicable, otherwise throws an error.
      */
     const std::string &GetLexeme() const;
 

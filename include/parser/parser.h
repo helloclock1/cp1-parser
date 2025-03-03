@@ -11,6 +11,11 @@
 
 #include "tokenizer.h"
 
+class ParserError : public std::runtime_error {
+public:
+    ParserError(const std::string& msg);
+};
+
 // Forward declarations
 struct Module;
 struct BinaryOperation;

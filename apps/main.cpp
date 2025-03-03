@@ -73,7 +73,19 @@ int main(int argc, char* argv[]) {
     }
     Tokenizer tokenizer(&in, spaces);
     Parser parser(tokenizer);
-    Module file = parser.ParseModule();
+    Module file;
+    try {
+        file = parser.ParseModule();
+    } catch (const TokenizerError& e) {
+        std::cerr << "TokenizerError: " << e.what();
+        exit(2);
+    } catch (const ParserError& e) {
+        std::cerr << "ParserError: " << e.what();
+        exit(3);
+    } catch (const std::exception& e) {
+        std::cerr << "Unknown error encountered: " << e.what() << std::endl;
+        exit(4);
+    }
     if (out_filename.empty()) {
         CodeGenerator gen(std::cout);
         gen.Generate(file);
