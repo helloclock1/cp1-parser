@@ -45,6 +45,10 @@ Parser::Parser(Tokenizer& tokenizer) : tokenizer_(tokenizer) {
     tokenizer_.ReadToken();
 }
 
+Module Parser::ParseFile() {
+    return ParseModule();
+}
+
 Module Parser::ParseModule() {
     Module module;
     while (true) {
@@ -72,7 +76,7 @@ Module Parser::ParseModule() {
     }
 }
 
-void Parser::ThrowError(std::string msg) {
+void Parser::ThrowError(const std::string& msg) {
     throw ParserError(tokenizer_.GetCoords(), msg);
 }
 

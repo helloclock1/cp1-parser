@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
     Parser parser(tokenizer);
     Module file;
     try {
-        file = parser.ParseModule();
+        file = parser.ParseFile();
     } catch (const TokenizerError& e) {
         std::cerr << "TokenizerError: " << e.what() << std::endl;
         exit(2);

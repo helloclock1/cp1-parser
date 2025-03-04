@@ -160,6 +160,13 @@ public:
     Parser(Tokenizer& tokenizer);
 
     /**
+     * @brief User available function that invokes ParseModule and parses the
+     * file.
+     */
+    Module ParseFile();
+
+private:
+    /**
      * @brief Parses a module entity. As the provided file is technically a
      * module too, this function gets called to start parsing of the entire
      * file.
@@ -182,11 +189,10 @@ public:
      */
     Module ParseSubmodule();
 
-private:
     /**
      * @brief Helper function for throwing errors.
      */
-    void ThrowError(std::string msg);
+    void ThrowError(const std::string& msg);
 
     /**
      * @brief Helper function for getting current token.

@@ -148,11 +148,13 @@ private:
      * of line and column.
      */
     char StreamRead();
+
     /**
      * @brief Helper function for reading a token of types `TokenType::NUMBER`
      * and `TokenType::FLOAT`.
      */
     void ReadNumber();
+
     /**
      * @brief Helper function for reading a sequence of alphanumeric characters.
      */
