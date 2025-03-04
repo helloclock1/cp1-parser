@@ -66,11 +66,14 @@ Module Parser::ParseModule() {
             case TokenType::DEDENT:
                 return module;
             default:
-                throw ParserError(tokenizer_.GetCoords(),
-                                  "Unexpected token encountered: `" +
-                                      CurrentTokenLexeme() + "`.");
+                ThrowError("Unexpected token encountered: `" +
+                           CurrentTokenLexeme() + "`.");
         }
     }
+}
+
+void Parser::ThrowError(std::string msg) {
+    throw ParserError(tokenizer_.GetCoords(), msg);
 }
 
 Token Parser::CurrentToken() const {
@@ -87,10 +90,8 @@ std::string Parser::CurrentTokenLexeme() const {
 
 void Parser::ExpectType(TokenType type) {
     if (CurrentToken().GetType() != type) {
-        throw ParserError(tokenizer_.GetCoords(),
-                          "Unexpected token encountered: expected " +
-                              kTokenName.at(type) + ", got " +
-                              CurrentTokenLexeme() + ".");
+        ThrowError("Unexpected token encountered: expected " +
+                   kTokenName.at(type) + ", got " + CurrentTokenLexeme() + ".");
     }
 }
 
@@ -156,19 +157,19 @@ Module Parser::ParseSubmodule() {
         tokenizer_.ReadToken();
     }
     if (CurrentTokenType() != TokenType::INDENT) {
-        throw ParserError(tokenizer_.GetCoords(),
-                          "Expected an indent after substructure declaration "
-                          "that started at line " +
-                              std::to_string(start_line) + ".");
+        ThrowError(
+            "Expected an indent after substructure declaration "
+            "that started at line " +
+            std::to_string(start_line) + ".");
     }
     tokenizer_.ReadToken();
     Module submodule = ParseModule();
     if (CurrentTokenType() != TokenType::DEDENT &&
         CurrentTokenType() != TokenType::FILE_END) {
-        throw ParserError(tokenizer_.GetCoords(),
-                          "Expected a dedent after a substructure body that "
-                          "started at line " +
-                              std::to_string(start_line) + ".");
+        ThrowError(
+            "Expected a dedent after a substructure body that "
+            "started at line " +
+            std::to_string(start_line) + ".");
     }
     submodule.name_ = submodule_name;
     tokenizer_.ReadToken();
@@ -295,11 +296,10 @@ Expression Parser::ParseAtom() {
             return expr;
         }
         default:
-            throw ParserError(
-                tokenizer_.GetCoords(),
-                "Unexpected token in expression encountered: got `" +
-                    CurrentTokenLexeme() +
-                    "`, expected an identifier, a number, a bracket "
-                    "enclosed expression.");
+            ThrowError("Unexpected token in expression encountered: got `" +
+                       CurrentTokenLexeme() +
+                       "`, expected an identifier, a number, a bracket "
+                       "enclosed expression.");
     }
+    return Expression{};
 }

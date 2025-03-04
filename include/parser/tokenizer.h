@@ -139,6 +139,11 @@ public:
 
 private:
     /**
+     * @brief Helper function for throwing errors.
+     */
+    void ThrowError(std::string msg);
+
+    /**
      * @brief Helper function for reading a character from stream, keeping track
      * of line and column.
      */

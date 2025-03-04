@@ -184,6 +184,11 @@ public:
 
 private:
     /**
+     * @brief Helper function for throwing errors.
+     */
+    void ThrowError(std::string msg);
+
+    /**
      * @brief Helper function for getting current token.
      */
     Token CurrentToken() const;

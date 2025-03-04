@@ -40,10 +40,6 @@ void Tokenizer::ReadToken(TokenType expected) {
         current_token_ = Token(TokenType::DEDENT);
         return;
     }
-    if (in_->peek() == -1) {
-        current_token_ = Token(TokenType::FILE_END, "file_end");
-        return;
-    }
     while (current_token_.GetType() == TokenType::EOL && in_->peek() == '\n') {
         StreamRead();
         return;
@@ -71,9 +67,9 @@ void Tokenizer::ReadToken(TokenType expected) {
                 current_token_ = Token(TokenType::INDENT);
                 return;
             } else {
-                throw TokenizerError(GetCoords(),
-                                     "Encountered an indent greater than the "
-                                     "indent of the block.");
+                ThrowError(
+                    "Encountered an indent greater than the "
+                    "indent of the block.");
             }
         } else if (new_indent < current_indent_spaces_) {
             if (indentation_level_ != 0) {
@@ -84,22 +80,19 @@ void Tokenizer::ReadToken(TokenType expected) {
                     ++dedents_;
                 }
                 if (new_indent != current_indent_spaces_) {
-                    throw TokenizerError(GetCoords(),
-                                         "Unexpected indentation encountered.");
+                    ThrowError("Unexpected indentation encountered.");
                 }
                 --dedents_;
                 --indentation_level_;
                 current_token_ = Token(TokenType::DEDENT);
                 return;
             } else {
-                throw TokenizerError(
-                    GetCoords(),
+                ThrowError(
                     "Encountered more dedents than there were indents prior.");
             }
         }
         substruct_started_ = false;
     } else {
-        // processing useless whitespace characters
         while (std::isspace(in_->peek()) && in_->peek() != '\n') {
             StreamRead();
         }
@@ -121,9 +114,9 @@ void Tokenizer::ReadToken(TokenType expected) {
         if (StreamRead() == '=') {
             current_token_ = Token(TokenType::ASSIGN);
         } else {
-            throw TokenizerError(GetCoords(),
-                                 "Unknown symbol encountered while tokenizing. "
-                                 "Maybe you meant `:=`?");
+            ThrowError(
+                "Unknown symbol encountered while tokenizing. "
+                "Maybe you meant `:=`?");
         }
     } else if (next == '\n') {
         StreamRead();
@@ -150,16 +143,15 @@ void Tokenizer::ReadToken(TokenType expected) {
         StreamRead();
         current_token_ = Token(TokenType::POW);
     } else if (next == -1) {
+        current_token_ = Token(TokenType::FILE_END);
     } else {
-        throw TokenizerError(
-            GetCoords(), "Unknown symbol encountered while tokenizing: `" +
-                             std::string(1, static_cast<char>(next)) + "`.");
+        ThrowError("Unknown symbol encountered while tokenizing: `" +
+                   std::string(1, static_cast<char>(next)) + "`.");
     }
     if (expected != TokenType::NONE && current_token_.GetType() != expected) {
-        throw TokenizerError(GetCoords(),
-                             "Unexpected token encountered: expected " +
-                                 kTokenName.at(expected) + ", got " +
-                                 kTokenName.at(current_token_.GetType()) + ".");
+        ThrowError("Unexpected token encountered: expected " +
+                   kTokenName.at(expected) + ", got " +
+                   kTokenName.at(current_token_.GetType()) + ".");
     }
 }
 
@@ -177,6 +169,10 @@ bool Token::operator==(const Token &other) const {
 
 bool Token::operator!=(const Token &other) const {
     return !(*this == other);
+}
+
+void Tokenizer::ThrowError(std::string msg) {
+    throw TokenizerError(GetCoords(), msg);
 }
 
 char Tokenizer::StreamRead() {
@@ -204,10 +200,10 @@ void Tokenizer::ReadNumber() {
         }
     }
     if (std::isalpha(in_->peek())) {
-        throw TokenizerError(GetCoords(),
-                             "Encountered a token starting with a number that "
-                             "is not a number itself: `" +
-                                 token_string + "` and on.");
+        ThrowError(
+            "Encountered a token starting with a number that "
+            "is not a number itself: `" +
+            token_string + "` and on.");
     }
     current_token_ = is_float ? Token(TokenType::FLOAT, token_string)
                               : Token(TokenType::INTEGER, token_string);
