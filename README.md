@@ -27,10 +27,4 @@ Call `beautify` executable to format `read_from` and output to `write_to`:
 
 For more, call `beautify` executable for help:
 
-`$ ./beautify`
-
-## Roadmap
- - [x] Tokenization;
- - [x] Parsing into separate structures and classes;
- - [x] Beautify output;
- - [ ] Prod-ready to some degree.
+`$ ./beautify` or `$ ./beautify --help`

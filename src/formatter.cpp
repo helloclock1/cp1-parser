@@ -52,10 +52,8 @@ void CodeGenerator::GenerateModule(const Module& module) {
         if (!first_decl) {
             if (newline_after_decls) {
                 out_ << "\n";
-                NewLine();
-            } else {
-                NewLine();
             }
+            NewLine();
         }
         GenerateDeclaration(decl);
         first_decl = false;
